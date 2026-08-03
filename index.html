@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimarket Pro</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        
+        .main-container { display: flex; width: 100%; height: 100%; flex-direction: row; }
+        .pos-section { flex: 1.4; padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-width: 300px; }
+        .sidebar-section { flex: 1; background: var(--card-bg); border-left: 1px solid var(--border); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-width: 300px; }
+
+        h1, h2, h3, h4 { color: #0f172a; font-size: 1.1rem; }
+        h1 { font-size: 1.4rem; }
+        .card { background: var(--card-bg); padding: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        
+        .input-group { display: flex; gap: 8px; margin-top: 5px; }
+        input, select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; width: 100%; background: #fff; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        
+        button { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        button:hover { background: var(--primary-dark); }
+        button.btn-danger { background: var(--danger); }
+        button.btn-danger:hover { background: #b91c1c; }
+        button.btn-success { background: var(--success); }
+        button.btn-success:hover { background: #15803d; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        th { background: #f1f5f9; }
+
+        .total-box { font-size: 1.3rem; font-weight: bold; color: var(--success); text-align: right; margin-top: 8px; }
+        
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #334155; color: white; padding: 10px 20px; border-radius: 6px; display: none; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 999; padding: 15px; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+
+        /* DISEÑO RESPONSIVO PARA TABLETS Y TELÉFONOS */
+        @media (max-width: 900px) {
+            body { height: auto; overflow: auto; }
+            .main-container { flex-direction: column; height: auto; overflow: visible; }
+            .sidebar-section { border-left: none; border-top: 1px solid var(--border); }
+            .pos-section, .sidebar-section { max-height: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- SECCIÓN DE CAJA Y VENTAS -->
+        <div class="pos-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h1>🛒 Minimarket Pro</h1>
+                <button onclick="abrirPanelAdmin()" class="btn-success">🔒 Panel Admin</button>
+            </div>
+
+            <!-- Escaneo / Búsqueda -->
+            <div class="card">
+                <h3>Código de Barras / Búsqueda</h3>
+                <div class="input-group">
+                    <input type="text" id="barcode-input" placeholder="Escanee o escriba y presione Enter..." autofocus>
+                    <button onclick="procesarEscaneoManual()">Agregar</button>
+                </div>
+            </div>
+
+            <!-- Carro de Compras -->
+            <div class="card" style="flex: 1; display: flex; flex-direction: column; min-height: 220px;">
+                <h3>Venta Actual</h3>
+                <div style="flex: 1; overflow-y: auto; max-height: 220px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Cant</th>
+                                <th>Subtotal</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="total-box" id="cart-total">Total: $0</div>
+                <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                    <select id="payment-method" style="flex: 1; min-width: 130px;">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </select>
+                    <button class="btn-success" style="flex: 2; font-size: 1rem; min-width: 150px;" onclick="cobrarVenta()">Cobrar y Finalizar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN LATERAL: INVENTARIO -->
+        <div class="sidebar-section">
+            <h3>Inventario y Catálogo</h3>
+            <div class="card">
+                <h4>Registrar / Actualizar Producto</h4>
+                <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                    <input type="text" id="prod-barcode" placeholder="Código de barras">
+                    <input type="text" id="prod-name" placeholder="Nombre del producto">
+                    <input type="number" id="prod-price" placeholder="Precio ($)">
+                    <input type="number" id="prod-stock" placeholder="Stock inicial">
+                    <button onclick="guardarProducto()">Guardar Producto</button>
+                </div>
+            </div>
+            <div class="card" style="flex: 1; overflow-y: auto; max-height: 250px;">
+                <h4>Catálogo Actual</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADMINISTRADOR -->
+    <div id="admin-modal" class="modal">
+        <div class="modal-content">
+            <div id="pin-section">
+                <h3>Acceso de Administrador</h3>
+                <p style="font-size: 0.9rem; margin-top: 5px;">Ingrese su PIN de seguridad (por defecto: 1234):</p>
+                <div class="input-group" style="margin-top: 10px;">
+                    <input type="password" id="admin-pin-input" placeholder="PIN de seguridad">
+                    <button onclick="verificarPinAdmin()">Ingresar</button>
+                </div>
+                <button onclick="cerrarPanelAdmin()" class="btn-danger" style="margin-top: 10px; width: 100%;">Cancelar</button>
+            </div>
+            
+            <div id="admin-dashboard" style="display: none;">
+                <h3 style="margin-bottom: 8px;">Panel de Control y Cuadratura</h3>
+                
+                <!-- Sección de Cuadratura de Caja -->
+                <div class="card" style="background: #f8fafc; margin-bottom: 8px;">
+                    <h4 style="font-size: 0.95rem; color: var(--primary);">📊 Cuadratura de Caja (Resumen)</h4>
+                    <div id="cuadratura-resumen" style="font-size: 0.9rem; margin-top: 6px; display: flex; flex-direction: column; gap: 5px;">
+                        <!-- Se llena por JS -->
+                    </div>
+                </div>
+
+                <!-- Sección para cambiar clave -->
+                <div class="card" style="background: #f1f5f9; margin-bottom: 8px;">
+                    <h4 style="font-size: 0.95rem;">Cambiar Contraseña de Administrador</h4>
+                    <div class="input-group" style="margin-top: 6px;">
+                        <input type="password" id="nuevo-pin-admin" placeholder="Nuevo PIN (mín. 4 dígitos)">
+                        <button onclick="guardarNuevoPinAdmin()">Actualizar</button>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 0.95rem;">Historial de Ventas y Corrección de Pagos</h4>
+                <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border); margin-top: 5px; border-radius: 6px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID / Hora</th>
+                                <th>Total</th>
+                                <th>Pago Actual</th>
+                                <th style="text-align: center;">Cambiar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-history-body"></tbody>
+                    </table>
+                </div>
+                <button onclick="cerrarPanelAdmin()" style="margin-top: 12px; width: 100%; background: #475569;">Cerrar Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Notificación</div>
+
+    <script>
+        let inventario = JSON.parse(localStorage.getItem('min_pro_inventario')) || [
+            { barcode: '7801235004954', name: 'Pan Amasado (kg)', price: 1800, stock: 15 },
+            { barcode: '7809876543210', name: 'Bebida 1.5L', price: 2000, stock: 20 }
+        ];
+
+        let carro = JSON.parse(localStorage.getItem('min_pro_carro_actual')) || [];
+        let ventasHistorial = JSON.parse(localStorage.getItem('min_pro_ventas')) || [];
+        let adminPin = localStorage.getItem('min_pro_pin') || '1234';
+
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensaje;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function mantenerFocoScanner() {
+            const input = document.getElementById('barcode-input');
+            if (input) input.focus();
+        }
+
+        window.onload = function() {
+            renderizarInventario();
+            renderizarCarro();
+            mantenerFocoScanner();
+        };
+
+        // Devolver el foco al escáner si se hace clic en cualquier parte de la página que no sea un input editable
+        document.addEventListener('click', function(event) {
+            if (event.target.tagName !== 'INPUT' && event.target.tagName !== 'SELECT' && event.target.tagName !== 'BUTTON') {
+                mantenerFocoScanner();
+            }
+        });
+
+        document.getElementById('barcode-input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                procesarEscaneoManual();
+            }
+        });
+
+        function procesarEscaneoManual() {
+            const input = document.getElementById('barcode-input');
+            const codigo = input.value.trim();
+            if (!codigo) return;
+
+            const producto = inventario.find(p => p.barcode === codigo || p.name.toLowerCase().includes(codigo.toLowerCase()));
+            
+            if (producto) {
+                if (producto.stock > 0) {
+                    agregarAlCarro(producto.barcode);
+                    input.value = '';
+                } else {
+                    mostrarToast('¡Producto sin stock disponible!');
+                }
+            } else {
+                mostrarToast('Producto no encontrado.');
+                input.value = '';
+            }
+            mantenerFocoScanner();
+        }
+
+        function agregarAlCarro(barcode) {
+            const producto = inventario.find(p => p.barcode === barcode);
+            if (!producto) return;
+
+            const itemEnCarro = carro.find(item => item.barcode === barcode);
+            if (itemEnCarro) {
+                if (itemEnCarro.cantidad < producto.stock) {
+                    itemEnCarro.cantidad++;
+                } else {
+                    mostrarToast('Stock máximo alcanzado.');
+                    return;
+                }
+            } else {
+                carro.push({ barcode: producto.barcode, name: producto.name, price: producto.price, cantidad: 1 });
+            }
+            guardarCarroTemporal();
+            renderizarCarro();
+        }
+
+        function cambiarCantidad(barcode, delta) {
+            const item = carro.find(i => i.barcode === barcode);
+            const producto = inventario.find(p => p.barcode === barcode);
+            if (!item) return;
+
+            const nuevaCantidad = item.cantidad + delta;
+            if (nuevaCantidad > 0 && nuevaCantidad <= producto.stock) {
+                item.cantidad = nuevaCantidad;
+            } else if (nuevaCantidad <= 0) {
+                carro = carro.filter(i => i.barcode !== barcode);
+            }
+            guardarCarroTemporal();
+            renderizarCarro();
+            mantenerFocoScanner();
+        }
+
+        function guardarCarroTemporal() {
+            localStorage.setItem('min_pro_carro_actual', JSON.stringify(carro));
+        }
+
+        function renderizarCarro() {
+            const tbody = document.getElementById('cart-table-body');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            carro.forEach(item => {
+                const subtotal = item.price * item.cantidad;
+                total += subtotal;
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>$${item.price}</td>
+                        <td>
+                            <button onclick="cambiarCantidad('${item.barcode}', -1)" style="padding: 2px 6px;">-</button>
+                            ${item.cantidad}
+                            <button onclick="cambiarCantidad('${item.barcode}', 1)" style="padding: 2px 6px;">+</button>
+                        </td>
+                        <td>$${subtotal}</td>
+                        <td><button class="btn-danger" style="padding: 2px 6px; font-size: 0.75rem;" onclick="eliminarDelCarro('${item.barcode}')">X</button></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('cart-total').textContent = `Total: $${total}`;
+        }
+
+        function eliminarDelCarro(barcode) {
+            carro = carro.filter(i => i.barcode !== barcode);
+            guardarCarroTemporal();
+            renderizarCarro();
+            mantenerFocoScanner();
+        }
+
+        function cobrarVenta() {
+            if (carro.length === 0) {
+                mostrarToast('El carro está vacío.');
+                return;
+            }
+
+            const metodoPago = document.getElementById('payment-method').value;
+            let totalVenta = carro.reduce((sum, item) => sum + (item.price * item.cantidad), 0);
+
+            carro.forEach(item => {
+                const prod = inventario.find(p => p.barcode === item.barcode);
+                if (prod) prod.stock -= item.cantidad;
+            });
+
+            const nuevaVenta = {
+                id: 'V-' + Date.now().toString().slice(-6),
+                total: totalVenta,
+                metodoPago: metodoPago,
+                items: [...carro],
+                fecha: new Date().toLocaleTimeString()
+            };
+
+            ventasHistorial.push(nuevaVenta);
+            localStorage.setItem('min_pro_ventas', JSON.stringify(ventasHistorial));
+            localStorage.setItem('min_pro_inventario', JSON.stringify(inventario));
+
+            carro = [];
+            guardarCarroTemporal();
+            renderizarCarro();
+            renderizarInventario();
+            mostrarToast(`¡Venta cobrada con éxito por ${metodoPago}!`);
+            mantenerFocoScanner();
+        }
+
+        function guardarProducto() {
+            const barcode = document.getElementById('prod-barcode').value.trim();
+            const name = document.getElementById('prod-name').value.trim();
+            const price = parseFloat(document.getElementById('prod-price').value);
+            const stock = parseInt(document.getElementById('prod-stock').value);
+
+            if (!barcode || !name || isNaN(price) || isNaN(stock)) {
+                mostrarToast('Complete todos los campos.');
+                return;
+            }
+
+            const index = inventario.findIndex(p => p.barcode === barcode);
+            if (index >= 0) {
+                inventario[index] = { barcode, name, price, stock };
+                mostrarToast('Producto actualizado.');
+            } else {
+                inventario.push({ barcode, name, price, stock });
+                mostrarToast('Producto registrado.');
+            }
+
+            localStorage.setItem('min_pro_inventario', JSON.stringify(inventario));
+            renderizarInventario();
+
+            document.getElementById('prod-barcode').value = '';
+            document.getElementById('prod-name').value = '';
+            document.getElementById('prod-price').value = '';
+            document.getElementById('prod-stock').value = '';
+            mantenerFocoScanner();
+        }
+
+        function renderizarInventario() {
+            const tbody = document.getElementById('inventory-table-body');
+            tbody.innerHTML = '';
+            inventario.forEach((p, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.barcode}</td>
+                        <td>${p.name}</td>
+                        <td>${p.stock}</td>
+                        <td>$${p.price}</td>
+                        <td><button class="btn-danger" style="padding: 2px 6px; font-size: 0.75rem;" onclick="eliminarProducto(${index})">X</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function eliminarProducto(index) {
+            if (confirm('¿Estás seguro de eliminar este producto del inventario?')) {
+                inventario.splice(index, 1);
+                localStorage.setItem('min_pro_inventario', JSON.stringify(inventario));
+                renderizarInventario();
+                mostrarToast('Producto eliminado del inventario.');
+                mantenerFocoScanner();
+            }
+        }
+
+        function abrirPanelAdmin() {
+            document.getElementById('admin-modal').style.display = 'flex';
+            document.getElementById('pin-section').style.display = 'block';
+            document.getElementById('admin-dashboard').style.display = 'none';
+            document.getElementById('admin-pin-input').value = '';
+            document.getElementById('admin-pin-input').focus();
+        }
+
+        function cerrarPanelAdmin() {
+            document.getElementById('admin-modal').style.display = 'none';
+            mantenerFocoScanner();
+        }
+
+        document.getElementById('admin-pin-input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                verificarPinAdmin();
+            }
+        });
+
+        function verificarPinAdmin() {
+            const pinIngresado = document.getElementById('admin-pin-input').value;
+            if (pinIngresado === adminPin) {
+                document.getElementById('pin-section').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                renderizarPanelAdminData();
+            } else {
+                mostrarToast('PIN incorrecto.');
+            }
+        }
+
+        function guardarNuevoPinAdmin() {
+            const nuevoPin = document.getElementById('nuevo-pin-admin').value.trim();
+            if (nuevoPin.length < 4) {
+                mostrarToast('El PIN debe tener al menos 4 dígitos.');
+                return;
+            }
+            adminPin = nuevoPin;
+            localStorage.setItem('min_pro_pin', adminPin);
+            mostrarToast('¡Contraseña de administrador actualizada con éxito!');
+            document.getElementById('nuevo-pin-admin').value = '';
+        }
+
+        function renderizarPanelAdminData() {
+            renderizarCuadraturaCaja();
+            renderizarHistorialVentasAdmin();
+        }
+
+        function renderizarCuadraturaCaja() {
+            let totalGeneral = 0;
+            let totalEfectivo = 0;
+            let totalTarjeta = 0;
+            let totalTransferencia = 0;
+
+            ventasHistorial.forEach(v => {
+                totalGeneral += v.total;
+                if (v.metodoPago === 'Efectivo') totalEfectivo += v.total;
+                else if (v.metodoPago === 'Tarjeta') totalTarjeta += v.total;
+                else if (v.metodoPago === 'Transferencia') totalTransferencia += v.total;
+            });
+
+            const contenedor = document.getElementById('cuadratura-resumen');
+            contenedor.innerHTML = `
+                <div style="display: flex; justify-content: space-between;"><span>💵 Total Efectivo:</span> <strong>$${totalEfectivo}</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>💳 Total Tarjeta:</span> <strong>$${totalTarjeta}</strong></div>
+                <div style="display: flex; justify-content: space-between;"><span>📱 Total Transferencia:</span> <strong>$${totalTransferencia}</strong></div>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 4px 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 1rem; color: var(--success);"><span>💰 Total General en Caja:</span> <strong>$${totalGeneral}</strong></div>
+            `;
+        }
+
+        function renderizarHistorialVentasAdmin() {
+            const tbody = document.getElementById('sales-history-body');
+            tbody.innerHTML = '';
+            if (ventasHistorial.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay ventas registradas.</td></tr>`;
+                return;
+            }
+
+            ventasHistorial.slice().reverse().forEach(v => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${v.id} <span style="font-size:0.75rem; color:#64748b;">(${v.fecha})</span></td>
+                        <td>$${v.total}</td>
+                        <td><strong>${v.metodoPago}</strong></td>
+                        <td style="text-align: center;">
+                            <button onclick="cambiarMetodoPago('${v.id}')" style="padding: 3px 8px; font-size: 0.75rem;">Cambiar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function cambiarMetodoPago(idVenta) {
+            const venta = ventasHistorial.find(v => v.id === idVenta);
+            if (venta) {
+                const opciones = ['Efectivo', 'Tarjeta', 'Transferencia'];
+                let actualIdx = opciones.indexOf(venta.metodoPago);
+                let siguienteMetodo = opciones[(actualIdx + 1) % opciones.length];
+                
+                venta.metodoPago = siguienteMetodo;
+                localStorage.setItem('min_pro_ventas', JSON.stringify(ventasHistorial));
+                renderizarPanelAdminData();
+                mostrarToast(`Venta ${idVenta} cambiada a ${siguienteMetodo}`);
+            }
+        }
+    </script>
+</body>
+</html>
+
