@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimarket Pro — Con Código de Barras</title>
+    <title>Minimarket Pro — Código + Kilo/Unidad</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -51,7 +51,6 @@
         .btn-scan:hover { background: #d97706; }
 
         #reader { width: 100%; max-width: 400px; margin: 15px auto; border-radius: 8px; overflow: hidden; display: none; }
-        .scan-result { text-align: center; padding: 10px; background: #f0fdf4; border-radius: 6px; margin: 10px 0; display: none; }
 
         .search-box input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 15px; font-size: 15px; }
         .categories { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -64,6 +63,9 @@
         }
         .product-card:hover { border-color: #2563eb; transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .product-card .codigo { font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-family: monospace; }
+        .product-card .tipo-venta { font-size: 11px; display: inline-block; padding: 2px 8px; border-radius: 12px; margin-bottom: 6px; font-weight: 600; }
+        .tipo-unidad { background: #dbeafe; color: #1d4ed8; }
+        .tipo-kilo { background: #fef3c7; color: #92400e; }
         .product-card h4 { font-size: 15px; margin-bottom: 8px; color: #1e293b; }
         .product-card .price { font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 4px; }
         .product-card .stock { font-size: 13px; color: #94a3b8; }
@@ -72,7 +74,9 @@
         .cart-header h2 { font-size: 18px; margin-bottom: 15px; color: #1e293b; }
         .cart-items { background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 15px; min-height: 120px; max-height: 250px; overflow-y: auto; }
         .cart-empty { text-align: center; color: #94a3b8; padding: 30px 15px; font-size: 14px; }
-        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 15px; }
+        .cart-item { display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 15px; gap: 4px; }
+        .cart-item-top { display: flex; justify-content: space-between; width: 100%; }
+        .cart-item-peso { font-size: 13px; color: #f59e0b; }
         .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 16px; }
         .total-row.final { font-size: 26px; font-weight: bold; color: #2563eb; border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 10px; }
         .btn-pay { width: 100%; padding: 14px; background: #00c896; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
@@ -84,6 +88,17 @@
         .metodo-pago.seleccionado { border-color: #00c896; background: #f0fdf4; }
         .payment-input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 18px; margin-top: 8px; }
         .vuelto-row { display: flex; justify-content: space-between; padding: 12px; background: #f0fdf4; border-radius: 8px; color: #059669; font-weight: bold; margin-top: 10px; }
+
+        #modal-peso { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; justify-content: center; align-items: center; padding: 20px; }
+        .modal-peso-content { background: #fff; padding: 25px; border-radius: 12px; max-width: 340px; width: 100%; text-align: center; }
+        .modal-peso-content h3 { font-size: 18px; color: #f59e0b; margin-bottom: 10px; }
+        .modal-peso-content p { color: #64748b; margin-bottom: 15px; font-size: 14px; }
+        .modal-peso-content input { width: 100%; padding: 14px; font-size: 22px; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; outline: none; }
+        .modal-peso-content input:focus { border-color: #f59e0b; }
+        .modal-peso-btns { display: flex; gap: 10px; margin-top: 15px; }
+        .modal-peso-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
+        .btn-cancelar { background: #f1f5f9; color: #374151; }
+        .btn-confirmar { background: #f59e0b; color: #fff; font-weight: bold; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto; }
         .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 600px; max-width: 100%; }
@@ -140,19 +155,29 @@
 </head>
 <body>
 
-<!-- LOGIN SIMPLE -->
+<div id="modal-peso">
+    <div class="modal-peso-content">
+        <h3>⚖️ Producto por Kilo</h3>
+        <p id="peso-nombre-prod"></p>
+        <input type="number" id="input-peso" step="0.001" placeholder="0.000 kg" autofocus>
+        <div class="modal-peso-btns">
+            <button class="btn-cancelar" onclick="cerrarModalPeso()">❌ Cancelar</button>
+            <button class="btn-confirmar" onclick="confirmarPeso()">✅ Agregar</button>
+        </div>
+    </div>
+</div>
+
 <div id="login-screen">
     <div class="login-box">
         <div class="icono">🔒</div>
         <h2>Acceso Restringido</h2>
-        <p>Minimarket Pro— Sistema de Ventas con Código de Barras</p>
+        <p>Minimarket Pro — Código + Kilo/Unidad</p>
         <input type="password" id="clave-acceso" placeholder="Escribe tu clave...">
         <button class="login-btn" onclick="verificarAcceso()">🔓 Ingresar</button>
         <div class="error" id="msg-error">❌ Clave incorrecta. Inténtalo nuevamente.</div>
     </div>
 </div>
 
-<!-- APLICACIÓN PRINCIPAL -->
 <div class="app-container" id="main-app">
     <section class="products-section">
         <div class="top-bar">
@@ -166,14 +191,12 @@
             </div>
         </div>
 
-        <!-- 🔍 BUSQUEDA POR CÓDIGO + LECTOR -->
         <div class="busqueda-codigo">
             <input type="text" id="codigo-busqueda" placeholder="📦 Escribir código..." onkeypress="if(event.key==='Enter')buscarPorCodigo()">
             <button class="btn btn-scan" onclick="toggleEscaner()">📷 Escanear</button>
             <button class="btn btn-success" onclick="buscarPorCodigo()">✅ Agregar</button>
         </div>
         <div id="reader"></div>
-        <div class="scan-result" id="scan-resultado"></div>
 
         <div class="search-box">
             <input type="text" id="buscar-producto" placeholder="🔍 Buscar por nombre..." oninput="cargarProductos()">
@@ -210,17 +233,16 @@
         <div id="seccion-efectivo">
             <label style="font-size:14px; color:#64748b;">💰 Monto recibido:</label>
             <input type="number" class="payment-input" id="monto-pago" oninput="calcularVuelto()">
-            <div class="vuelto-row" id="fila-vuelto">
+            <div class="vuelto-row" id="fila-vuelto" style="display:none;">
                 <span>Vuelto:</span>
-                <span id="vuelto">$0</span>
+                <span id="valor-vuelto">$0</span>
             </div>
         </div>
-        <button class="btn-pay" onclick="cobrarVenta()">✓ COBRAR VENTA</button>
+        <button class="btn-pay" onclick="cobrarVenta()">✅ COBRAR VENTA</button>
         <button class="btn-clear" onclick="limpiarCarrito()">🗑️ Limpiar Carrito</button>
     </section>
 </div>
 
-<!-- MODAL ADMIN -->
 <div class="modal" id="modal-admin">
     <div class="modal-content">
         <div class="modal-header">
@@ -229,7 +251,7 @@
         </div>
         <div class="form-row">
             <div class="form-group" style="grid-column: 1 / -1;">
-                <label>📦 Código de Barras / Código</label>
+                <label>📦 Código de Barras</label>
                 <input type="text" id="prod-codigo" placeholder="Ej: 7801234567890">
             </div>
             <div class="form-group" style="grid-column: 1 / -1;">
@@ -237,15 +259,22 @@
                 <input type="text" id="prod-nombre" placeholder="Ej: Coca Cola 1.5L">
             </div>
             <div class="form-group">
-                <label>Precio ($)</label>
-                <input type="number" id="prod-precio" placeholder="0">
+                <label>💰 Precio</label>
+                <input type="number" id="prod-precio" placeholder="Precio">
             </div>
             <div class="form-group">
-                <label>Stock</label>
-                <input type="number" id="prod-stock" placeholder="0">
+                <label>📊 Tipo de Venta</label>
+                <select id="prod-tipo">
+                    <option value="unidad">Por Unidad</option>
+                    <option value="kilo">Por Kilo</option>
+                </select>
             </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Categoría</label>
+            <div class="form-group">
+                <label>📦 Stock</label>
+                <input type="number" id="prod-stock" placeholder="Stock">
+            </div>
+            <div class="form-group">
+                <label>🏷️ Categoría</label>
                 <select id="prod-categoria">
                     <option value="bebidas">Bebidas</option>
                     <option value="comestibles">Comestibles</option>
@@ -256,136 +285,117 @@
         </div>
         <button class="btn-save" onclick="guardarProducto()">💾 Guardar Producto</button>
         <div class="product-list">
-            <h4>📦 Lista de Productos</h4>
+            <h4>📋 Lista de Productos</h4>
             <div id="lista-productos-admin"></div>
         </div>
-        <button class="btn btn-light" style="width:100%; margin-top:20px;" onclick="cerrarAdmin()">Cerrar</button>
     </div>
 </div>
 
-<!-- MODAL CUADRATURA -->
 <div class="modal" id="modal-cuadratura">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>📊 Cuadratura de Caja — Cierre de Día</h3>
+            <h3>📊 Cuadratura de Caja</h3>
             <button class="close-btn" onclick="cerrarCuadratura()">×</button>
         </div>
         <div class="cuadratura-resumen">
             <div class="cuadro-pago efectivo">
                 <div class="etiqueta">💵 Efectivo</div>
-                <div class="monto" id="caja-efectivo">$0</div>
+                <div class="monto" id="cuadro-efectivo">$0</div>
                 <div class="cantidad" id="cant-efectivo">0 ventas</div>
             </div>
             <div class="cuadro-pago debito">
                 <div class="etiqueta">💳 Débito</div>
-                <div class="monto" id="caja-debito">$0</div>
+                <div class="monto" id="cuadro-debito">$0</div>
                 <div class="cantidad" id="cant-debito">0 ventas</div>
             </div>
             <div class="cuadro-pago transferencia">
                 <div class="etiqueta">🔄 Transferencia</div>
-                <div class="monto" id="caja-transferencia">$0</div>
+                <div class="monto" id="cuadro-transferencia">$0</div>
                 <div class="cantidad" id="cant-transferencia">0 ventas</div>
             </div>
         </div>
         <div class="total-final">
             <div class="etiqueta">💰 TOTAL DEL DÍA</div>
-            <div class="monto" id="caja-total">$0</div>
+            <div class="monto" id="total-dia">$0</div>
             <div class="ventas" id="cantidad-ventas">0 ventas registradas</div>
         </div>
         <div class="caja-fisica">
-            <h4>📝 Comparación — Cuadratura Física</h4>
+            <h4>📝 Conteo Físico de Caja</h4>
             <div class="form-group">
-                <label>💰 Dinero en caja (efectivo físico):</label>
-                <input type="number" id="caja-fisica-ingresado" placeholder="0" oninput="calcularDiferencia()">
+                <label>Dinero en efectivo que tienes en caja:</label>
+                <input type="number" id="caja-fisica-input" placeholder="0" oninput="calcularDiferencia()">
             </div>
-            <div class="diferencia" id="fila-diferencia"></div>
-            <p style="font-size:12px; color:#92400e; margin-top:8px;">
-                Ingresa el efectivo que tienes en mano para compararlo con lo registrado en el sistema.
-            </p>
+            <div class="diferencia" id="diferencia-caja" style="display:none;"></div>
         </div>
-        <h4 style="margin-bottom:10px;">📋 Detalle de Ventas</h4>
-        <div id="lista-ventas-cuadratura"></div>
+        <h4>📋 Historial de Ventas</h4>
+        <div id="lista-ventas"></div>
         <div class="acciones-cierre">
-            <button class="btn btn-primary" onclick="alert('Función de impresión lista')">🖨️ Imprimir</button>
-            <button class="btn btn-danger" onclick="cerrarCajaDia()">🔒 Cerrar Día</button>
+            <button class="btn btn-danger" onclick="cerrarCaja()">🔒 Cerrar Caja (Borrar Todo)</button>
             <button class="btn btn-light" onclick="cerrarCuadratura()">Cerrar</button>
         </div>
     </div>
 </div>
 
 <script>
-// ==================================================
-// 🔑 CLAVES DEL SISTEMA
-// ==================================================
-const CLAVE_CORRECTA = "1234";
-const PIN_ADMIN = "1234";
+const CLAVE_ACCESO = "1234";
 let escannerActivo = false;
 let lectorQR = null;
+let productoPendienteKilo = null;
+let metodoPagoActual = "efectivo";
 
 function verificarAcceso() {
     const clave = document.getElementById('clave-acceso').value.trim();
-    if (clave === CLAVE_CORRECTA) {
+    if (clave === CLAVE_ACCESO) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
         cargarProductos();
         actualizarFecha();
     } else {
         document.getElementById('msg-error').style.display = 'block';
-        document.getElementById('clave-acceso').value = '';
-        setTimeout(() => document.getElementById('msg-error').style.display = 'none', 3000);
     }
 }
-document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') verificarAcceso();
-});
 
-// ==================================================
-// 📦 PRODUCTOS CON CÓDIGO + ESCANER
-// ==================================================
-let productos = JSON.parse(localStorage.getItem('mp_productos')) || [
-    { id: 1, codigo: "7801234567890", nombre: "Coca Cola 1.5L", precio: 2000, stock: 15, categoria: "bebidas" },
-    { id: 2, codigo: "7802345678901", nombre: "Pan Hallulla", precio: 1800, stock: 50, categoria: "comestibles" },
-    { id: 3, codigo: "7803456789012", nombre: "Leche Entera 1L", precio: 1200, stock: 20, categoria: "lacteos" },
-    { id: 4, codigo: "7804567890123", nombre: "Arroz 1kg", precio: 1500, stock: 30, categoria: "comestibles" },
-    { id: 5, codigo: "7805678901234", nombre: "Jugo Naranja 1L", precio: 1500, stock: 12, categoria: "bebidas" },
-    { id: 6, codigo: "7806789012345", nombre: "Detergente 1L", precio: 2800, stock: 8, categoria: "otros" },
-    { id: 7, codigo: "7807890123456", nombre: "Yogurt Vaso", precio: 800, stock: 24, categoria: "lacteos" },
-    { id: 8, codigo: "7808901234567", nombre: "Papel Higiénico", precio: 3500, stock: 10, categoria: "otros" }
-];
-let carrito = [];
-let categoriaActiva = "todos";
-let metodoPagoActual = "efectivo";
-let historialVentas = JSON.parse(localStorage.getItem('mp_historial')) || [];
-
-function guardarProductos() { localStorage.setItem('mp_productos', JSON.stringify(productos)); }
-function guardarHistorial() { localStorage.setItem('mp_historial', JSON.stringify(historialVentas)); }
 function actualizarFecha() {
     const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
     document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-CL', opciones);
 }
 
-// 🔍 BUSCAR POR CÓDIGO
+let productos = JSON.parse(localStorage.getItem('mp_productos')) || [
+    { id: 1, codigo: "7801234567890", nombre: "Aceite Marolio 1L", precio: 2500, tipo: "unidad", stock: 24, categoria: "comestibles" },
+    { id: 2, codigo: "7802345678901", nombre: "Arroz Grano Largo 1kg", precio: 1200, tipo: "kilo", stock: 50, categoria: "comestibles" },
+    { id: 3, codigo: "7803456789012", nombre: "Leche Entera 1L", precio: 950, tipo: "unidad", stock: 30, categoria: "lacteos" },
+    { id: 4, codigo: "7804567890123", nombre: "Carne Molida", precio: 5990, tipo: "kilo", stock: 20, categoria: "otros" },
+    { id: 5, codigo: "7805678901234", nombre: "Coca Cola 1.5L", precio: 1500, tipo: "unidad", stock: 40, categoria: "bebidas" },
+    { id: 6, codigo: "7806789012345", nombre: "Queso Mantecoso", precio: 8900, tipo: "kilo", stock: 15, categoria: "lacteos" },
+    { id: 7, codigo: "7807890123456", nombre: "Huevo 30 unidades", precio: 3800, tipo: "unidad", stock: 12, categoria: "otros" },
+    { id: 8, codigo: "7808901234567", nombre: "Azúcar 1kg", precio: 1100, tipo: "unidad", stock: 35, categoria: "comestibles" }
+];
+
+let carrito = [];
+let historialVentas = JSON.parse(localStorage.getItem('mp_ventas')) || [];
+let categoriaActiva = 'todos';
+
+function guardarProductosLS() { localStorage.setItem('mp_productos', JSON.stringify(productos)); }
+function guardarVentasLS() { localStorage.setItem('mp_ventas', JSON.stringify(historialVentas)); }
+
 function buscarPorCodigo() {
     const codigo = document.getElementById('codigo-busqueda').value.trim();
     if (!codigo) return;
     const prod = productos.find(p => p.codigo === codigo);
     if (prod) {
-        agregarAlCarrito(prod.id);
+        agregarAlCarritoPorId(prod.id);
         document.getElementById('codigo-busqueda').value = '';
     } else {
         alert(`⚠️ Código "${codigo}" no encontrado`);
     }
 }
 
-// 📷 ESCANER DE CÓDIGOS DE BARRAS
 function toggleEscaner() {
     const reader = document.getElementById('reader');
     if (!escannerActivo) {
         reader.style.display = 'block';
         escannerActivo = true;
-        if (!lectorQR) {
-            lectorQR = new Html5Qrcode("reader");
-        }
+        if (!lectorQR) lectorQR = new Html5Qrcode("reader");
         lectorQR.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 120 } },
@@ -396,8 +406,8 @@ function toggleEscaner() {
                 document.getElementById('codigo-busqueda').value = decodedText;
                 buscarPorCodigo();
             },
-            (error) => {}
-        ).catch(err => {
+            () => {}
+        ).catch(() => {
             alert("❌ No se pudo acceder a la cámara. Verifica los permisos.");
             reader.style.display = 'none';
             escannerActivo = false;
@@ -411,38 +421,64 @@ function toggleEscaner() {
 
 function cargarProductos() {
     const grid = document.getElementById('products-grid');
-    let lista = productos;
-    if (categoriaActiva !== "todos") lista = productos.filter(p => p.categoria === categoriaActiva);
+    let lista = categoriaActiva !== 'todos' ? productos.filter(p => p.categoria === categoriaActiva) : productos;
     const busqueda = document.getElementById('buscar-producto').value.toLowerCase();
     if (busqueda) lista = lista.filter(p => p.nombre.toLowerCase().includes(busqueda));
-    grid.innerHTML = "";
-    lista.forEach(p => {
-        grid.innerHTML += `
-            <div class="product-card" onclick="agregarAlCarrito(${p.id})">
-                <div class="codigo">📦 ${p.codigo}</div>
-                <h4>${p.nombre}</h4>
-                <p class="price">$${p.precio.toLocaleString('es-CL')}</p>
-                <p class="stock">Stock: ${p.stock}</p>
-            </div>
-        `;
-    });
+    grid.innerHTML = lista.map(p => `
+        <div class="product-card" onclick="agregarAlCarritoPorId(${p.id})">
+            <div class="codigo">📦 ${p.codigo}</div>
+            <span class="tipo-venta ${p.tipo === 'unidad' ? 'tipo-unidad' : 'tipo-kilo'}">
+                ${p.tipo === 'unidad' ? '📦 Unidad' : '⚖️ Kilo'}
+            </span>
+            <h4>${p.nombre}</h4>
+            <p class="price">$${p.precio.toLocaleString('es-CL')}${p.tipo === 'kilo' ? '/kg' : ''}</p>
+            <p class="stock">Stock: ${p.stock}</p>
+        </div>
+    `).join('');
 }
 
-function seleccionarCategoria(boton, categoria) {
-    categoriaActiva = categoria;
+function seleccionarCategoria(btn, cat) {
+    categoriaActiva = cat;
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    boton.classList.add('active');
+    btn.classList.add('active');
     cargarProductos();
 }
 
-function agregarAlCarrito(id) {
+function agregarAlCarritoPorId(id) {
     const prod = productos.find(p => p.id === id);
-    if (!prod || prod.stock <= 0) { alert("⚠️ Sin stock disponible"); return; }
-    const item = carrito.find(i => i.id === id);
-    if (item) item.cantidad++;
-    else carrito.push({ id: prod.id, nombre: prod.nombre, precio: prod.precio, cantidad: 1 });
+    if (!prod) return;
+    if (prod.stock <= 0) { alert(`⚠️ "${prod.nombre}" sin stock disponible`); return; }
+    if (prod.tipo === 'kilo') {
+        productoPendienteKilo = prod;
+        document.getElementById('peso-nombre-prod').textContent = prod.nombre + ' — $' + prod.precio.toLocaleString('es-CL') + '/kg';
+        document.getElementById('input-peso').value = '';
+        document.getElementById('modal-peso').style.display = 'flex';
+        return;
+    }
+    const itemExistente = carrito.find(i => i.id === id);
+    if (itemExistente) {
+        itemExistente.cantidad++;
+        itemExistente.subtotal = itemExistente.cantidad * prod.precio;
+    } else {
+        carrito.push({ id: prod.id, nombre: prod.nombre, precio: prod.precio, tipo: prod.tipo, cantidad: 1, peso: null, subtotal: prod.precio });
+    }
     prod.stock--;
-    guardarProductos();
+    guardarProductosLS();
+    actualizarCarrito();
+    cargarProductos();
+}
+
+function cerrarModalPeso() { document.getElementById('modal-peso').style.display = 'none'; productoPendienteKilo = null; }
+
+function confirmarPeso() {
+    const peso = parseFloat(document.getElementById('input-peso').value);
+    if (!peso || peso <= 0) { alert("⚠️ Ingresa un peso válido (ej: 0.750)"); return; }
+    if (!productoPendienteKilo) return;
+    const subtotal = Math.round(productoPendienteKilo.precio * peso);
+    carrito.push({ id: productoPendienteKilo.id, nombre: productoPendienteKilo.nombre, precio: productoPendienteKilo.precio, tipo: 'kilo', cantidad: 1, peso: peso, subtotal: subtotal });
+    productoPendienteKilo.stock--;
+    guardarProductosLS();
+    cerrarModalPeso();
     actualizarCarrito();
     cargarProductos();
 }
@@ -451,52 +487,20 @@ function actualizarCarrito() {
     const container = document.getElementById('cart-items');
     const totalEl = document.getElementById('total-carrito');
     if (carrito.length === 0) {
-        container.innerHTML = `<div class="cart-empty">Escribe un código, escanea o toca un producto</div>`;
-        totalEl.textContent = "$0";
-        document.getElementById('monto-pago').value = "";
+        container.innerHTML = '<div class="cart-empty">Escribe un código, escanea o toca un producto</div>';
+        totalEl.textContent = '$0';
         document.getElementById('fila-vuelto').style.display = 'none';
         return;
     }
-    let total = 0;
-    container.innerHTML = "";
-    carrito.forEach(item => {
-        const subtotal = item.precio * item.cantidad;
-        total += subtotal;
-        container.innerHTML += `
-            <div class="cart-item">
-                <span>${item.nombre} × ${item.cantidad}</span>
-                <span>$${subtotal.toLocaleString('es-CL')}</span>
-            </div>
-        `;
-    });
-    totalEl.textContent = `$${total.toLocaleString('es-CL')}`;
+    container.innerHTML = carrito.map(item => `
+        <div class="cart-item">
+            <div class="cart-item-top"><strong>${item.nombre}</strong><span>$${item.subtotal.toLocaleString('es-CL')}</span></div>
+            ${item.tipo === 'kilo' ? `<span class="cart-item-peso">⚖️ ${item.peso.toFixed(3)} kg × $${item.precio.toLocaleString('es-CL')}/kg</span>` : `<span>Cantidad: ${item.cantidad}</span>`}
+        </div>
+    `).join('');
+    const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
+    totalEl.textContent = '$' + total.toLocaleString('es-CL');
     calcularVuelto();
-}
-
-function calcularVuelto() {
-    const total = carrito.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
-    const pago = parseFloat(document.getElementById('monto-pago').value) || 0;
-    const fila = document.getElementById('fila-vuelto');
-    const vueltoEl = document.getElementById('vuelto');
-    if (metodoPagoActual === 'efectivo' && pago >= total && total > 0) {
-        fila.style.display = 'flex';
-        vueltoEl.textContent = `$${(pago - total).toLocaleString('es-CL')}`;
-    } else {
-        fila.style.display = 'none';
-    }
-}
-
-function limpiarCarrito() {
-    if (carrito.length === 0) return;
-    if (!confirm("¿Limpiar carrito? Los productos volverán a stock")) return;
-    carrito.forEach(item => {
-        const prod = productos.find(p => p.id === item.id);
-        if (prod) prod.stock += item.cantidad;
-    });
-    carrito = [];
-    guardarProductos();
-    actualizarCarrito();
-    cargarProductos();
 }
 
 function seleccionarPago(metodo) {
@@ -504,209 +508,133 @@ function seleccionarPago(metodo) {
     document.querySelectorAll('.metodo-pago').forEach(el => el.classList.remove('seleccionado'));
     document.getElementById(`metodo-${metodo}`).classList.add('seleccionado');
     document.getElementById('seccion-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
-    if (metodo !== 'efectivo') {
-        document.getElementById('monto-pago').value = '';
-        document.getElementById('fila-vuelto').style.display = 'none';
-    }
+    document.getElementById('fila-vuelto').style.display = 'none';
+}
+
+function calcularVuelto() {
+    const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
+    const monto = parseFloat(document.getElementById('monto-pago').value) || 0;
+    const filaVuelto = document.getElementById('fila-vuelto');
+    if (metodoPagoActual === 'efectivo' && monto >= total && total > 0) {
+        document.getElementById('valor-vuelto').textContent = '$' + (monto - total).toLocaleString('es-CL');
+        filaVuelto.style.display = 'flex';
+    } else { filaVuelto.style.display = 'none'; }
 }
 
 function cobrarVenta() {
     if (carrito.length === 0) { alert("⚠️ El carrito está vacío"); return; }
-    const total = carrito.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
-    const pago = parseFloat(document.getElementById('monto-pago').value) || 0;
-    if (metodoPagoActual === 'efectivo' && pago < total) {
-        alert(`⚠️ Pago insuficiente. Faltan $${(total - pago).toLocaleString('es-CL')}`);
-        return;
+    const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
+    if (metodoPagoActual === 'efectivo') {
+        const monto = parseFloat(document.getElementById('monto-pago').value) || 0;
+        if (monto < total) { alert(`⚠️ Monto insuficiente. Faltan $${(total - monto).toLocaleString('es-CL')}`); return; }
     }
-    const venta = {
-        id: Date.now(),
-        fecha: new Date().toISOString(),
-        productos: carrito.map(i => ({ nombre: i.nombre, cantidad: i.cantidad, precio: i.precio })),
-        total: total,
-        metodoPago: metodoPagoActual,
-        vuelto: metodoPagoActual === 'efectivo' ? (pago - total) : 0
-    };
-    historialVentas.unshift(venta);
-    guardarHistorial();
-    alert(`✅ Venta registrada!\nTotal: $${total.toLocaleString('es-CL')}`);
-    carrito = [];
-    document.getElementById('monto-pago').value = "";
-    actualizarCarrito();
-    cargarProductos();
+    historialVentas.unshift({ id: Date.now(), fecha: new Date().toISOString(), items: [...carrito], total: total, metodo: metodoPagoActual });
+    guardarVentasLS();
+    alert(`✅ Venta registrada!\nTotal: $${total.toLocaleString('es-CL')}\nPago: ${metodoPagoActual.toUpperCase()}`);
+    carrito = []; document.getElementById('monto-pago').value = ''; actualizarCarrito();
 }
 
-function abrirAdmin() {
-    const pin = prompt("🔐 Ingrese PIN de Administrador:");
-    if (pin === PIN_ADMIN) {
-        document.getElementById('modal-admin').style.display = 'flex';
-        cargarListaAdmin();
-    } else if (pin !== null) alert("❌ PIN Incorrecto");
+function limpiarCarrito() {
+    if (carrito.length === 0) return;
+    if (!confirm("¿Limpiar todo el carrito? Los productos vuelven a stock")) return;
+    carrito.forEach(item => { const prod = productos.find(p => p.id === item.id); if (prod) prod.stock += item.cantidad || 1; });
+    carrito = []; document.getElementById('monto-pago').value = ''; guardarProductosLS(); actualizarCarrito(); cargarProductos();
 }
-function cerrarAdmin() {
-    document.getElementById('modal-admin').style.display = 'none';
-    document.getElementById('prod-codigo').value = '';
-    document.getElementById('prod-nombre').value = '';
-    document.getElementById('prod-precio').value = '';
-    document.getElementById('prod-stock').value = '';
-    delete window.editandoId;
-}
+
+function abrirAdmin() { document.getElementById('modal-admin').style.display = 'flex'; cargarListaAdmin(); }
+function cerrarAdmin() { document.getElementById('modal-admin').style.display = 'none'; delete window.editandoId; }
 function cargarListaAdmin() {
-    const container = document.getElementById('lista-productos-admin');
-    container.innerHTML = "";
-    productos.forEach(p => {
-        container.innerHTML += `
-            <div class="product-item">
-                <span><strong>${p.nombre}</strong> — 📦${p.codigo} — $${p.precio.toLocaleString('es-CL')} | Stock: ${p.stock}</span>
-                <div>
-                    <button class="btn-sm btn-edit" onclick="editarProducto(${p.id})">✏️</button>
-                    <button class="btn-sm btn-delete" onclick="eliminarProducto(${p.id})">🗑️</button>
-                </div>
-            </div>
-        `;
-    });
+    const lista = document.getElementById('lista-productos-admin');
+    lista.innerHTML = productos.map(p => `
+        <div class="product-item">
+            <div><strong>${p.nombre}</strong><br>📦 ${p.codigo} | 💰 $${p.precio.toLocaleString('es-CL')} | ${p.tipo === 'unidad' ? '📦 Unidad' : '⚖️ Kilo'} | Stock: ${p.stock}</div>
+            <div><button class="btn-sm btn-edit" onclick="editarProducto(${p.id})">✏️</button><button class="btn-sm btn-delete" onclick="eliminarProducto(${p.id})">🗑️</button></div>
+        </div>
+    `).join('');
 }
 function editarProducto(id) {
-    const prod = productos.find(p => p.id === id);
+    const prod = productos.find(p => p.id === id); if (!prod) return;
     document.getElementById('prod-codigo').value = prod.codigo;
     document.getElementById('prod-nombre').value = prod.nombre;
     document.getElementById('prod-precio').value = prod.precio;
+    document.getElementById('prod-tipo').value = prod.tipo;
     document.getElementById('prod-stock').value = prod.stock;
     document.getElementById('prod-categoria').value = prod.categoria;
     window.editandoId = id;
 }
-function eliminarProducto(id) {
-    if (!confirm("¿Eliminar este producto?")) return;
-    productos = productos.filter(p => p.id !== id);
-    guardarProductos();
-    cargarProductos();
-    cargarListaAdmin();
-}
+function eliminarProducto(id) { if (!confirm("¿Eliminar este producto?")) return; productos = productos.filter(p => p.id !== id); guardarProductosLS(); cargarProductos(); cargarListaAdmin(); }
 function guardarProducto() {
     const codigo = document.getElementById('prod-codigo').value.trim();
     const nombre = document.getElementById('prod-nombre').value.trim();
     const precio = parseFloat(document.getElementById('prod-precio').value);
+    const tipo = document.getElementById('prod-tipo').value;
     const stock = parseInt(document.getElementById('prod-stock').value);
     const categoria = document.getElementById('prod-categoria').value;
-    
-    // Verificar código duplicado
-    const codigoExiste = productos.some(p => p.codigo === codigo && p.id !== window.editandoId);
-    if (codigoExiste) {
-        alert("⚠️ Este código ya está asignado a otro producto");
-        return;
-    }
-    
-    if (!codigo || !nombre || isNaN(precio) || isNaN(stock) || precio <= 0) {
-        alert("⚠️ Complete todos los campos correctamente");
-        return;
-    }
+    if (!codigo || !nombre || isNaN(precio) || isNaN(stock)) { alert("⚠️ Completa todos los campos"); return; }
+    if (productos.some(p => p.codigo === codigo && p.id !== window.editandoId)) { alert("⚠️ Ese código ya existe en otro producto"); return; }
     if (window.editandoId) {
         const prod = productos.find(p => p.id === window.editandoId);
-        prod.codigo = codigo;
-        prod.nombre = nombre;
-        prod.precio = precio;
-        prod.stock = stock;
-        prod.categoria = categoria;
-        delete window.editandoId;
-        alert("✅ Producto actualizado");
+        Object.assign(prod, { codigo, nombre, precio, tipo, stock, categoria });
+        delete window.editandoId; alert("✅ Producto actualizado");
     } else {
         const nuevoId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
-        productos.push({ id: nuevoId, codigo, nombre, precio, stock, categoria });
+        productos.push({ id: nuevoId, codigo, nombre, precio, tipo, stock, categoria });
         alert("✅ Producto agregado");
     }
-    guardarProductos();
-    cargarProductos();
-    cargarListaAdmin();
+    guardarProductosLS(); cargarProductos(); cargarListaAdmin();
     document.getElementById('prod-codigo').value = '';
     document.getElementById('prod-nombre').value = '';
     document.getElementById('prod-precio').value = '';
     document.getElementById('prod-stock').value = '';
 }
 
-function abrirCuadratura() {
-    document.getElementById('modal-cuadratura').style.display = 'flex';
-    cargarCuadratura();
-}
-function cerrarCuadratura() { 
-    document.getElementById('modal-cuadratura').style.display = 'none'; 
-    document.getElementById('caja-fisica-ingresado').value = '';
-    document.getElementById('fila-diferencia').classList.remove('positiva', 'negativa');
-    document.getElementById('fila-diferencia').style.display = 'none';
-}
-function cargarCuadratura() {
-    const totalEfectivo = historialVentas.filter(v => v.metodoPago === 'efectivo').reduce((s, v) => s + v.total, 0);
-    const totalDebito = historialVentas.filter(v => v.metodoPago === 'debito').reduce((s, v) => s + v.total, 0);
-    const totalTransferencia = historialVentas.filter(v => v.metodoPago === 'transferencia').reduce((s, v) => s + v.total, 0);
-    const totalGeneral = totalEfectivo + totalDebito + totalTransferencia;
-    const cantEfectivo = historialVentas.filter(v => v.metodoPago === 'efectivo').length;
-    const cantDebito = historialVentas.filter(v => v.metodoPago === 'debito').length;
-    const cantTransferencia = historialVentas.filter(v => v.metodoPago === 'transferencia').length;
-
-    document.getElementById('caja-efectivo').textContent = `$${totalEfectivo.toLocaleString('es-CL')}`;
-    document.getElementById('caja-debito').textContent = `$${totalDebito.toLocaleString('es-CL')}`;
-    document.getElementById('caja-transferencia').textContent = `$${totalTransferencia.toLocaleString('es-CL')}`;
-    document.getElementById('caja-total').textContent = `$${totalGeneral.toLocaleString('es-CL')}`;
-    document.getElementById('cant-efectivo').textContent = `${cantEfectivo} ventas`;
-    document.getElementById('cant-debito').textContent = `${cantDebito} ventas`;
-    document.getElementById('cant-transferencia').textContent = `${cantTransferencia} ventas`;
-    document.getElementById('cantidad-ventas').textContent = `${historialVentas.length} ventas registradas`;
-
-    const lista = document.getElementById('lista-ventas-cuadratura');
-    if (historialVentas.length === 0) {
-        lista.innerHTML = `<div class="sin-ventas">No hay ventas registradas hoy</div>`;
-    } else {
-        lista.innerHTML = "";
-        historialVentas.forEach(v => {
-            lista.innerHTML += `
-                <div class="venta-item">
-                    <strong>${new Date(v.fecha).toLocaleTimeString('es-CL')}</strong> — 
-                    $${v.total.toLocaleString('es-CL')}
-                    <span class="venta-metodo venta-${v.metodoPago}">${v.metodoPago}</span>
-                </div>
-            `;
-        });
+function abrirCuadratura() { document.getElementById('modal-cuadratura').style.display = 'flex'; actualizarCuadratura(); }
+function cerrarCuadratura() { document.getElementById('modal-cuadratura').style.display = 'none'; }
+function actualizarCuadratura() {
+    const efectivo = historialVentas.filter(v => v.metodo === 'efectivo').reduce((s, v) => s + v.total, 0);
+    const debito = historialVentas.filter(v => v.metodo === 'debito').reduce((s, v) => s + v.total, 0);
+    const transferencia = historialVentas.filter(v => v.metodo === 'transferencia').reduce((s, v) => s + v.total, 0);
+    const total = efectivo + debito + transferencia;
+    document.getElementById('cuadro-efectivo').textContent = '$' + efectivo.toLocaleString('es-CL');
+    document.getElementById('cuadro-debito').textContent = '$' + debito.toLocaleString('es-CL');
+    document.getElementById('cuadro-transferencia').textContent = '$' + transferencia.toLocaleString('es-CL');
+    document.getElementById('total-dia').textContent = '$' + total.toLocaleString('es-CL');
+    document.getElementById('cant-efectivo').textContent = historialVentas.filter(v => v.metodo === 'efectivo').length + ' ventas';
+    document.getElementById('cant-debito').textContent = historialVentas.filter(v => v.metodo === 'debito').length + ' ventas';
+    document.getElementById('cant-transferencia').textContent = historialVentas.filter(v => v.metodo === 'transferencia').length + ' ventas';
+    document.getElementById('cantidad-ventas').textContent = historialVentas.length + ' ventas registradas';
+    const lista = document.getElementById('lista-ventas');
+    if (historialVentas.length === 0) { lista.innerHTML = '<div class="sin-ventas">No hay ventas registradas</div>'; }
+    else {
+        lista.innerHTML = historialVentas.map(v => `
+            <div class="venta-item">
+                <strong>${new Date(v.fecha).toLocaleString('es-CL')}</strong> — Total: $${v.total.toLocaleString('es-CL')}
+                <span class="venta-metodo venta-${v.metodo}">${v.metodo.toUpperCase()}</span>
+            </div>
+        `).join('');
     }
+    calcularDiferencia();
 }
-
 function calcularDiferencia() {
-    const totalEfectivo = historialVentas.filter(v => v.metodoPago === 'efectivo').reduce((s, v) => s + v.total, 0);
-    const fisico = parseFloat(document.getElementById('caja-fisica-ingresado').value) || 0;
-    const diferencia = fisico - totalEfectivo;
-    const fila = document.getElementById('fila-diferencia');
-    
-    if (fisico === 0) {
-        fila.style.display = 'none';
-        return;
-    }
-    
-    fila.style.display = 'block';
-    fila.classList.remove('positiva', 'negativa');
-    
-    if (diferencia === 0) {
-        fila.textContent = "✅ Caja cuadrada — Todo coincide";
-        fila.classList.add('positiva');
-    } else if (diferencia > 0) {
-        fila.textContent = `⚠️ Sobran: $${diferencia.toLocaleString('es-CL')}`;
-        fila.classList.add('positiva');
-    } else {
-        fila.textContent = `⚠️ Faltan: $${Math.abs(diferencia).toLocaleString('es-CL')}`;
-        fila.classList.add('negativa');
-    }
+    const efectivoSistema = historialVentas.filter(v => v.metodo === 'efectivo').reduce((s, v) => s + v.total, 0);
+    const cajaFisica = parseFloat(document.getElementById('caja-fisica-input').value) || 0;
+    const diferencia = cajaFisica - efectivoSistema;
+    const el = document.getElementById('diferencia-caja');
+    if (efectivoSistema === 0 && cajaFisica === 0) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    if (diferencia === 0) { el.textContent = "✅ Cuadra perfecto: $0 de diferencia"; el.className = "diferencia positiva"; }
+    else if (diferencia > 0) { el.textContent = `💰 Sobra: $${diferencia.toLocaleString('es-CL')}`; el.className = "diferencia positiva"; }
+    else { el.textContent = `📉 Falta: $${Math.abs(diferencia).toLocaleString('es-CL')}`; el.className = "diferencia negativa"; }
 }
-
-function cerrarCajaDia() {
-    if (!confirm("¿Cerrar caja del día? Se borrarán todas las ventas del historial.")) return;
+function cerrarCaja() {
+    if (!confirm("⚠️ ¿Borrar TODO el historial de ventas? No se puede deshacer.")) return;
     historialVentas = [];
-    guardarHistorial();
-    alert("✅ Caja cerrada. Listo para nuevo día.");
-    cerrarCuadratura();
+    guardarVentasLS();
+    document.getElementById('caja-fisica-input').value = '';
+    actualizarCuadratura();
+    alert("✅ Caja cerrada y limpiada");
 }
-
-// ==================================================
-// 🚀 INICIO DEL SISTEMA
-// ==================================================
-actualizarFecha();
 </script>
-
 </body>
 </html>
 
