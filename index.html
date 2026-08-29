@@ -3,701 +3,778 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimarket Pro — Código + Kilo/Unidad</title>
+    <title>Minimarket Pro — POS CORREGIDO</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f4f8; min-height: 100vh; }
 
+        /* LOGIN */
         #login-screen {
             position: fixed; inset: 0; background: linear-gradient(135deg, #1e40af, #3b82f6);
-            display: flex; justify-content: center; align-items: center; z-index: 99998; padding: 20px;
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
         }
-        .login-box {
-            background: #fff; padding: 40px 30px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.25);
-            max-width: 400px; width: 100%; text-align: center;
+        .login-box { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center; }
+        .login-box h2 { color: #1e40af; margin-bottom: 1.5rem; }
+        .login-box input { width: 100%; padding: 14px; font-size: 18px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
+        .login-box button { width: 100%; padding: 14px; background: #1e40af; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .login-box button:hover { background: #1d4ed8; }
+        .error-clave { color: red; margin-top: 10px; display: none; }
+
+        /* AVISO PRUEBA */
+        #aviso-prueba {
+            position: fixed; top: 0; left: 0; right: 0; background: #fef3c7; color: #92400e;
+            padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #f59e0b; z-index: 1500;
         }
-        .login-box .icono { font-size: 48px; margin-bottom: 10px; }
-        .login-box h2 { color: #2563eb; font-size: 26px; margin-bottom: 8px; }
-        .login-box p { color: #64748b; font-size: 15px; margin-bottom: 25px; }
-        .login-box input {
-            width: 100%; padding: 16px; font-size: 20px; border: 2px solid #e2e8f0;
-            border-radius: 12px; text-align: center; margin-bottom: 20px; outline: none;
+        #bloqueo-pantalla {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); color: white;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; padding: 2rem; text-align: center;
         }
-        .login-box input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
-        .login-btn {
-            width: 100%; padding: 16px; background: #2563eb; color: #fff; border: none;
-            border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer;
-            transition: background 0.2s;
+        #bloqueo-pantalla input { padding: 14px; font-size: 18px; border-radius: 8px; margin: 1rem; width: 280px; text-align: center; }
+        #bloqueo-pantalla button { padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+
+        /* APP */
+        #app { display: none; padding-top: 50px; }
+        .barra-superior { background: #1e40af; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; flex-wrap: wrap; gap: 8px; }
+        .barra-superior h1 { font-size: 18px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; margin-left: 5px; }
+        .btn-verde { background: #22c55e; color: white; }
+        .btn-verde:hover { background: #16a34a; }
+        .btn-rojo { background: #ef4444; color: white; }
+        .btn-rojo:hover { background: #dc2626; }
+        .btn-azul { background: #3b82f6; color: white; }
+        .btn-azul:hover { background: #2563eb; }
+        .btn-naranja { background: #f97316; color: white; }
+        .btn-naranja:hover { background: #ea580c; }
+        .btn-imprimir { background: #6366f1; color: white; }
+        .btn-imprimir:hover { background: #4f46e5; }
+        .btn-oculto { opacity: 0.7; }
+        .btn-oculto:hover { opacity: 1; }
+
+        .contenedor { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .fila { display: flex; flex-wrap: wrap; gap: 20px; }
+        .col-venta { flex: 1 1 400px; }
+        .col-productos { flex: 1 1 400px; }
+        .tarjeta { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px; }
+        .tarjeta h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+
+        /* BUSCADOR */
+        .input-buscar { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #d1d5db; border-radius: 8px; margin-bottom: 10px; }
+        #reader { width: 100%; max-width: 400px; margin: 10px auto; border-radius: 8px; overflow: hidden; }
+        .btn-escanear { width: 100%; margin-bottom: 10px; }
+        .sugerencias { background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; margin-top: -10px; margin-bottom: 10px; position: absolute; z-index: 50; width: calc(100% - 40px); max-width: 360px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .sugerencia-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .sugerencia-item:hover { background: #eff6ff; }
+
+        /* TABLA VENTA */
+        .tabla-venta { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .tabla-venta th, .tabla-venta td { padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .tabla-venta th { background: #f9fafb; font-weight: bold; color: #374151; }
+        .eliminar-item { color: #ef4444; cursor: pointer; font-weight: bold; }
+
+        /* PAGO — CURSOR PARPADEANDO SOLO EN EFECTIVO */
+        .total-grande { font-size: 32px; font-weight: bold; color: #1e40af; text-align: right; margin: 15px 0; }
+        .fila-pago { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
+        .fila-pago label { font-weight: bold; min-width: 120px; }
+        .fila-pago input { flex: 1; min-width: 150px; padding: 12px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 8px; transition: all 0.3s; }
+        #monto-recibido:enabled { 
+            animation: parpadeo 1s infinite; 
+            outline: none;
+            caret-color: #1e40af;
         }
-        .login-btn:hover { background: #1d4ed8; }
-        .error { color: #ef4444; margin-top: 15px; font-size: 15px; display: none; }
-
-        #main-app { display: none; }
-        .app-container { display: flex; min-height: 100vh; }
-        .products-section { flex: 2; padding: 20px; background: #fff; border-right: 1px solid #e2e8f0; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
-        .logo-area h1 { font-size: 22px; color: #2563eb; }
-        .btn { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
-        .btn-primary { background: #2563eb; color: #fff; }
-        .btn-success { background: #10b981; color: #fff; }
-        .btn-light { background: #f1f5f9; color: #334155; }
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-print { background: #0284c7; color: #fff; }
-        
-        .busqueda-codigo { display: flex; gap: 8px; margin-bottom: 12px; }
-        .busqueda-codigo input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
-        .busqueda-codigo input:focus { border-color: #2563eb; outline: none; }
-        .btn-scan { background: #f59e0b; color: #fff; white-space: nowrap; }
-        .btn-scan:hover { background: #d97706; }
-
-        #reader { width: 100%; max-width: 400px; margin: 15px auto; border-radius: 8px; overflow: hidden; display: none; }
-
-        .search-box input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 15px; font-size: 15px; }
-        .categories { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-        .cat-btn { padding: 8px 16px; border: none; background: #e2e8f0; border-radius: 20px; cursor: pointer; font-size: 14px; }
-        .cat-btn.active { background: #2563eb; color: #fff; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .product-card {
-            background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;
-            text-align: center; cursor: pointer; transition: all 0.2s;
+        #monto-recibido:disabled { 
+            background: #f3f4f6; 
+            border-color: #d1d5db; 
+            cursor: not-allowed;
+            animation: none;
         }
-        .product-card:hover { border-color: #2563eb; transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .product-card .codigo { font-size: 11px; color: #94a3b8; margin-bottom: 4px; font-family: monospace; }
-        .product-card .tipo-venta { font-size: 11px; display: inline-block; padding: 2px 8px; border-radius: 12px; margin-bottom: 6px; font-weight: 600; }
-        .tipo-unidad { background: #dbeafe; color: #1d4ed8; }
-        .tipo-kilo { background: #fef3c7; color: #92400e; }
-        .product-card h4 { font-size: 15px; margin-bottom: 8px; color: #1e293b; }
-        .product-card .price { font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 4px; }
-        .product-card .stock { font-size: 13px; color: #94a3b8; }
+        @keyframes parpadeo {
+            0% { border-color: #3b82f6; box-shadow: 0 0 0 transparent; }
+            50% { border-color: #1e40af; box-shadow: 0 0 10px #3b82f6; }
+            100% { border-color: #3b82f6; box-shadow: 0 0 0 transparent; }
+        }
+        .vuelto { font-size: 28px; font-weight: bold; color: #22c55e; text-align: right; margin-top: 10px; }
+        .vuelto-oculto { opacity: 0.3; font-size: 16px; }
+        .info-pago { font-size: 13px; color: #6b7280; margin-left: 10px; }
 
-        .cart-section { width: 380px; padding: 20px; background: #f8fafc; border-left: 1px solid #e2e8f0; }
-        .cart-header h2 { font-size: 18px; margin-bottom: 15px; color: #1e293b; }
-        .cart-items { background: #fff; border-radius: 10px; padding: 15px; margin-bottom: 15px; min-height: 120px; max-height: 250px; overflow-y: auto; }
-        .cart-empty { text-align: center; color: #94a3b8; padding: 30px 15px; font-size: 14px; }
-        .cart-item { display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 15px; gap: 4px; }
-        .cart-item-top { display: flex; justify-content: space-between; width: 100%; }
-        .cart-item-peso { font-size: 13px; color: #f59e0b; }
-        .total-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 16px; }
-        .total-row.final { font-size: 26px; font-weight: bold; color: #2563eb; border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 10px; }
-        .btn-pay { width: 100%; padding: 14px; background: #00c896; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-        .btn-pay:hover { background: #00b888; }
-        .btn-clear { width: 100%; padding: 10px; background: transparent; color: #64748b; border: none; text-align: center; cursor: pointer; font-size: 14px; margin-top: 10px; }
-        .metodo-pago-titulo { font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: #374151; }
-        .metodos-pago { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .metodo-pago { display: flex; align-items: center; gap: 10px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; background: #fff; }
-        .metodo-pago.seleccionado { border-color: #00c896; background: #f0fdf4; }
-        .payment-input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 18px; margin-top: 8px; }
-        .vuelto-row { display: flex; justify-content: space-between; padding: 12px; background: #f0fdf4; border-radius: 8px; color: #059669; font-weight: bold; margin-top: 10px; }
+        /* MEDIOS DE PAGO */
+        .medios-pago { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .medio-pago { padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .medio-pago.seleccionado { border-color: #1e40af; background: #eff6ff; font-weight: bold; }
 
-        #modal-peso { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; justify-content: center; align-items: center; padding: 20px; }
-        .modal-peso-content { background: #fff; padding: 25px; border-radius: 12px; max-width: 340px; width: 100%; text-align: center; }
-        .modal-peso-content h3 { font-size: 18px; color: #f59e0b; margin-bottom: 10px; }
-        .modal-peso-content p { color: #64748b; margin-bottom: 15px; font-size: 14px; }
-        .modal-peso-content input { width: 100%; padding: 14px; font-size: 22px; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; outline: none; }
-        .modal-peso-content input:focus { border-color: #f59e0b; }
-        .modal-peso-btns { display: flex; gap: 10px; margin-top: 15px; }
-        .modal-peso-btns button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
-        .btn-cancelar { background: #f1f5f9; color: #374151; }
-        .btn-confirmar { background: #f59e0b; color: #fff; font-weight: bold; }
+        /* PRODUCTOS */
+        .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .producto-card { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s; }
+        .producto-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .producto-nombre { font-weight: bold; font-size: 14px; margin-bottom: 5px; }
+        .producto-precio { color: #1e40af; font-weight: bold; font-size: 16px; }
+        .producto-stock { font-size: 12px; color: #6b7280; margin-top: 5px; }
+        .etiqueta-kilo { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: flex-start; padding: 40px 20px; overflow-y: auto; }
-        .modal-content { background: #fff; padding: 25px; border-radius: 12px; width: 600px; max-width: 100%; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
-        .modal-header h3 { font-size: 18px; color: #2563eb; }
-        .close-btn { width: 30px; height: 30px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; font-size: 18px; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #475569; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .btn-save { width: 100%; padding: 12px; background: #00c896; color: #fff; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-        .product-list { margin-top: 20px; }
-        .product-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #e2e8f0; flex-wrap: wrap; gap: 8px; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; margin-left: 5px; }
-        .btn-edit { background: #dbeafe; color: #2563eb; }
-        .btn-delete { background: #fee2e2; color: #ef4444; }
+        /* ADMIN — OCULTO POR DEFECTO */
+        .seccion-admin { display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; background: #fefefe; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px; }
+        .fila-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+        .fila-form input, .fila-form select { flex: 1; min-width: 120px; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; }
+        .fila-form button { white-space: nowrap; }
+        .reporte-caja { margin-top: 20px; padding: 15px; background: #f9fafb; border-radius: 8px; }
+        .reporte-caja h3 { margin-bottom: 10px; color: #374151; }
+        .reporte-linea { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb; }
+        .reporte-total { font-size: 20px; font-weight: bold; color: #1e40af; margin-top: 10px; }
+        .aviso-admin { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; margin-bottom: 15px; font-size: 14px; color: #92400e; }
 
-        .cuadratura-resumen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-        .cuadro-pago { padding: 16px; border-radius: 10px; text-align: center; border: 2px solid transparent; }
-        .cuadro-pago.efectivo { background: #f0fdf4; border-color: #86efac; }
-        .cuadro-pago.debito { background: #eff6ff; border-color: #93c5fd; }
-        .cuadro-pago.transferencia { background: #faf5ff; border-color: #d8b4fe; }
-        .cuadro-pago .etiqueta { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-        .cuadro-pago .monto { font-size: 22px; font-weight: 800; }
-        .cuadro-pago .cantidad { font-size: 12px; margin-top: 4px; opacity: 0.8; }
-        
-        .total-final { background: linear-gradient(135deg, #1e40af, #3b82f6); color: #fff; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        .total-final .etiqueta { font-size: 14px; opacity: 0.9; }
-        .total-final .monto { font-size: 32px; font-weight: 800; margin: 8px 0; }
-        .total-final .ventas { font-size: 13px; opacity: 0.85; }
+        /* IMPRESIÓN */
+        #ventana-impresion {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4000;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .ticket-caja {
+            background: white; width: 100%; max-width: 320px; padding: 25px; border-radius: 8px;
+            font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6;
+        }
+        .ticket-caja .titulo { text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 10px; }
+        .ticket-caja .divisor { border-bottom: 1px dashed #333; margin: 8px 0; }
+        .ticket-caja .fila { display: flex; justify-content: space-between; }
+        .ticket-caja .total-final { font-weight: bold; font-size: 18px; border-top: 2px solid #333; padding-top: 8px; margin-top: 5px; }
+        .ticket-caja .pie { text-align: center; font-size: 12px; margin-top: 20px; color: #555; }
+        .botones-impresion { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
 
-        .caja-fisica { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
-        .caja-fisica h4 { font-size: 15px; color: #92400e; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .diferencia { padding: 12px; border-radius: 8px; margin-top: 12px; font-weight: 600; }
-        .diferencia.positiva { background: #d1fae5; color: #065f46; }
-        .diferencia.negativa { background: #fee2e2; color: #991b1b; }
-
-        .venta-item { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-        .venta-metodo { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-left: 8px; }
-        .venta-efectivo { background: #d1fae5; color: #065f46; }
-        .venta-debito { background: #dbeafe; color: #1e40af; }
-        .venta-transferencia { background: #ede9fe; color: #6d28d9; }
-        .sin-ventas { text-align: center; color: #94a3b8; padding: 30px; }
-
-        .acciones-cierre { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-        .acciones-cierre button { flex: 1; min-width: 130px; }
-
-        .fecha-impresion { display: none; font-size: 14px; color: #333; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
-
-        /* Ajuste estricto para que la impresión entre limpia en una sola página */
         @media print {
-            @page { size: auto; margin: 10mm; }
             body * { visibility: hidden; }
-            #modal-cuadratura, #modal-cuadratura * { visibility: visible; }
-            #modal-cuadratura { position: absolute; inset: 0; background: #fff; padding: 0; }
-            .modal-content { width: 100% !important; height: auto !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
-            .close-btn, .acciones-cierre { display: none !important; }
-            .fecha-impresion { display: block !important; }
+            #ventana-impresion, #ventana-impresion * { visibility: visible; }
+            #ventana-impresion { position: absolute; inset: 0; background: white; }
+            .botones-impresion { display: none !important; }
+            .ticket-caja { box-shadow: none; border: none; }
         }
 
-        @media (max-width: 900px) {
-            .app-container { flex-direction: column; }
-            .cart-section { width: 100%; border-left: none; border-top: 1px solid #e2e8f0; }
-            .cuadratura-resumen { grid-template-columns: 1fr; }
+        @media (max-width: 768px) {
+            .fila { flex-direction: column; }
+            .medios-pago { grid-template-columns: 1fr; }
+            .total-grande { font-size: 26px; }
+            .vuelto { font-size: 22px; }
+            .sugerencias { width: calc(100% - 20px); }
         }
     </style>
 </head>
 <body>
 
-<div id="modal-peso">
-    <div class="modal-peso-content">
-        <h3>⚖️ Producto por Kilo</h3>
-        <p id="peso-nombre-prod"></p>
-        <input type="number" id="input-peso" step="0.001" placeholder="0.000 kg" autofocus>
-        <div class="modal-peso-btns">
-            <button class="btn-cancelar" onclick="cerrarModalPeso()">❌ Cancelar</button>
-            <button class="btn-confirmar" onclick="confirmarPeso()">✅ Agregar</button>
-        </div>
-    </div>
-</div>
-
+<!-- LOGIN -->
 <div id="login-screen">
     <div class="login-box">
-        <div class="icono">🔒</div>
-        <h2>Acceso Restringido</h2>
-        <p>Minimarket Pro — Código + Kilo/Unidad</p>
-        <input type="password" id="clave-acceso" placeholder="Escribe tu clave...">
-        <button class="login-btn" onclick="verificarAcceso()">🔓 Ingresar</button>
-        <div class="error" id="msg-error">❌ Clave incorrecta. Inténtalo nuevamente.</div>
+        <h2>🔐 Acceso al Sistema</h2>
+        <input type="password" id="clave-acceso" placeholder="Ingrese clave de acceso">
+        <button onclick="verificarClave()">Ingresar</button>
+        <p class="error-clave" id="msg-error">Clave incorrecta. Intente nuevamente.</p>
+        <p style="margin-top:15px; font-size:13px; color:#666;">Clave por defecto: 1234</p>
     </div>
 </div>
 
-<div class="app-container" id="main-app">
-    <section class="products-section">
-        <div class="top-bar">
-            <div class="logo-area">
-                <h1>🛒 Minimarket Pro</h1>
-                <span id="fecha-actual"></span>
-            </div>
-            <div class="top-actions">
-                <button class="btn btn-primary" onclick="pedirClaveAdmin()">⚙️ Admin</button>
-                <button class="btn btn-light" onclick="pedirClaveCuadratura()">📊 Cuadratura de Caja</button>
-            </div>
-        </div>
-
-        <div class="busqueda-codigo">
-            <input type="text" id="codigo-busqueda" placeholder="📦 Escribir código..." onkeypress="if(event.key==='Enter')buscarPorCodigo()">
-            <button class="btn btn-scan" onclick="toggleEscaner()">📷 Escanear</button>
-            <button class="btn btn-success" onclick="buscarPorCodigo()">✅ Agregar</button>
-        </div>
-        <div id="reader"></div>
-
-        <div class="search-box">
-            <input type="text" id="buscar-producto" placeholder="🔍 Buscar por nombre..." oninput="cargarProductos()">
-        </div>
-
-        <div class="categories">
-            <button class="cat-btn active" onclick="seleccionarCategoria(this, 'todos')">Todos</button>
-            <button class="cat-btn" onclick="seleccionarCategoria(this, 'bebidas')">Bebidas</button>
-            <button class="cat-btn" onclick="seleccionarCategoria(this, 'comestibles')">Comestibles</button>
-            <button class="cat-btn" onclick="seleccionarCategoria(this, 'lacteos')">Lácteos</button>
-            <button class="cat-btn" onclick="seleccionarCategoria(this, 'otros')">Otros</button>
-        </div>
-
-        <div class="products-grid" id="products-grid"></div>
-    </section>
-
-    <section class="cart-section">
-        <div class="cart-header">
-            <h2>🛒 Venta Actual</h2>
-        </div>
-        <div class="cart-items" id="cart-items">
-            <div class="cart-empty">Escribe un código, escanea o toca un producto</div>
-        </div>
-        <div class="total-row final">
-            <span>TOTAL</span>
-            <span id="total-carrito">$0</span>
-        </div>
-        <div class="metodo-pago-titulo">💰 Forma de Pago</div>
-        <div class="metodos-pago">
-            <div class="metodo-pago seleccionado" id="metodo-efectivo" onclick="seleccionarPago('efectivo')">💵 Efectivo</div>
-            <div class="metodo-pago" id="metodo-debito" onclick="seleccionarPago('debito')">💳 Débito</div>
-            <div class="metodo-pago" id="metodo-transferencia" onclick="seleccionarPago('transferencia')">🔄 Transferencia</div>
-        </div>
-        <div id="seccion-efectivo">
-            <label style="font-size:14px; color:#64748b;">💰 Monto recibido:</label>
-            <input type="number" class="payment-input" id="monto-pago" oninput="calcularVuelto()">
-            <div class="vuelto-row" id="fila-vuelto" style="display:none;">
-                <span>Vuelto:</span>
-                <span id="valor-vuelto">$0</span>
-            </div>
-        </div>
-        <button class="btn-pay" onclick="cobrarVenta()">✅ COBRAR VENTA</button>
-        <button class="btn-clear" onclick="limpiarCarrito()">🗑️ Limpiar Carrito</button>
-    </section>
+<!-- AVISO PRUEBA -->
+<div id="aviso-prueba" style="display: none;">
+    ⏳ Versión de prueba — Vencimiento: <span id="fecha-vencimiento"></span>
+    <button class="btn" style="float:right; background:none; color:inherit; border:none; font-weight:bold;" onclick="cerrarAviso()">✕</button>
 </div>
 
-<div class="modal" id="modal-admin">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>⚙️ Administración de Productos</h3>
-            <button class="close-btn" onclick="cerrarAdmin()">×</button>
-        </div>
-        <div class="form-row">
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>📦 Código de Barras</label>
-                <input type="text" id="prod-codigo" placeholder="Ej: 7801234567890">
-            </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label>Nombre del Producto</label>
-                <input type="text" id="prod-nombre" placeholder="Ej: Coca Cola 1.5L">
-            </div>
-            <div class="form-group">
-                <label>💰 Precio</label>
-                <input type="number" id="prod-precio" placeholder="Precio">
-            </div>
-            <div class="form-group">
-                <label>📊 Tipo de Venta</label>
-                <select id="prod-tipo">
-                    <option value="unidad">Por Unidad</option>
-                    <option value="kilo">Por Kilo</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>📦 Stock</label>
-                <input type="number" id="prod-stock" placeholder="Stock">
-            </div>
-            <div class="form-group">
-                <label>🏷️ Categoría</label>
-                <select id="prod-categoria">
-                    <option value="bebidas">Bebidas</option>
-                    <option value="comestibles">Comestibles</option>
-                    <option value="lacteos">Lácteos</option>
-                    <option value="otros">Otros</option>
-                </select>
-            </div>
-        </div>
-        <button class="btn-save" onclick="guardarProducto()">💾 Guardar Producto</button>
-        <div class="product-list">
-            <h4>📋 Lista de Productos</h4>
-            <div id="lista-productos-admin"></div>
-        </div>
+<!-- BLOQUEO -->
+<div id="bloqueo-pantalla" style="display: none;">
+    <h2>🔒 Período de prueba finalizado</h2>
+    <p>Ingrese la clave de activación para continuar.</p>
+    <input type="password" id="clave-activacion" placeholder="Clave de activación">
+    <button onclick="activarSistema()">Activar Sistema</button>
+    <p style="margin-top:15px; font-size:13px; color:#aaa;">Clave: activar2026</p>
+</div>
+
+<!-- VENTANA IMPRESIÓN -->
+<div id="ventana-impresion">
+    <div class="ticket-caja" id="contenido-ticket"></div>
+    <div class="botones-impresion">
+        <button class="btn btn-verde" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn btn-azul" onclick="cerrarVentanaImpresion()">✕ Cerrar</button>
     </div>
 </div>
 
-<div class="modal" id="modal-cuadratura">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>📊 Cuadratura de Caja</h3>
-            <button class="close-btn" onclick="cerrarCuadratura()">×</button>
+<!-- APP PRINCIPAL -->
+<div id="app">
+    <div class="barra-superior">
+        <h1>🛒 Minimarket Pro — POS</h1>
+        <div>
+            <button class="btn btn-azul btn-oculto" onclick="mostrarAdmin()">⚙️ Admin</button>
+            <button class="btn btn-naranja" onclick="cerrarCaja()">📊 Cerrar Caja</button>
+            <button class="btn btn-imprimir" onclick="previsualizarCaja()">🖨️ Imprimir Caja</button>
+            <button class="btn btn-verde" onclick="descargarCodigo()">💾 Descargar</button>
         </div>
-        
-        <div class="fecha-impresion" id="texto-fecha-impresion"></div>
+    </div>
 
-        <div class="cuadratura-resumen">
-            <div class="cuadro-pago efectivo">
-                <div class="etiqueta">💵 Efectivo</div>
-                <div class="monto" id="cuadro-efectivo">$0</div>
-                <div class="cantidad" id="cant-efectivo">0 ventas</div>
+    <div class="contenedor">
+        <div class="fila">
+            <!-- VENTA -->
+            <div class="col-venta">
+                <div class="tarjeta">
+                    <h2>🛍️ Venta Actual</h2>
+                    
+                    <input type="text" id="buscar-producto" class="input-buscar" placeholder="🔍 Buscar por nombre o código..." oninput="buscarSugerencias(this.value)" onkeypress="if(event.key==='Enter')seleccionarPrimero()">
+                    <div id="sugerencias" class="sugerencias" style="display:none;"></div>
+                    <button class="btn btn-azul btn-escanear" onclick="toggleEscaner()">📷 Escáner Código de Barras</button>
+                    <div id="reader" style="display: none;"></div>
+
+                    <table class="tabla-venta">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cant/Peso</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
+                                <th>✕</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-items"></tbody>
+                    </table>
+
+                    <div class="total-grande">Total: $<span id="total-venta">0</span></div>
+
+                    <div class="medios-pago">
+                        <div class="medio-pago seleccionado" data-metodo="efectivo" onclick="seleccionarPago(this)">💵 Efectivo</div>
+                        <div class="medio-pago" data-metodo="debito" onclick="seleccionarPago(this)">💳 Débito</div>
+                        <div class="medio-pago" data-metodo="transferencia" onclick="seleccionarPago(this)">🔄 Transferencia</div>
+                    </div>
+
+                    <div class="fila-pago">
+                        <label>Monto Recibido:</label>
+                        <input type="number" id="monto-recibido" placeholder="0" oninput="calcularVuelto()">
+                        <span class="info-pago" id="info-pago-texto">— Escriba el monto recibido</span>
+                    </div>
+                    <div class="vuelto" id="vuelto-fila">Vuelto: $<span id="vuelto">0</span></div>
+
+                    <button class="btn btn-verde" style="width:100%; margin-top:15px; padding:15px; font-size:18px;" onclick="finalizarVenta()">✅ Finalizar Venta</button>
+                    <button class="btn btn-rojo" style="width:100%; margin-top:10px;" onclick="limpiarVenta()">🗑️ Limpiar Venta</button>
+                </div>
+
+                <div class="tarjeta">
+                    <h2>📈 Cuadratura de Caja — Hoy</h2>
+                    <div class="reporte-caja">
+                        <div class="reporte-linea"><span>💵 Efectivo:</span><span id="caja-efectivo">$0</span></div>
+                        <div class="reporte-linea"><span>💳 Débito:</span><span id="caja-debito">$0</span></div>
+                        <div class="reporte-linea"><span>🔄 Transferencia:</span><span id="caja-transferencia">$0</span></div>
+                        <div class="reporte-total"><span>TOTAL CAJA:</span><span id="caja-total">$0</span></div>
+                    </div>
+                </div>
             </div>
-            <div class="cuadro-pago debito">
-                <div class="etiqueta">💳 Débito</div>
-                <div class="monto" id="cuadro-debito">$0</div>
-                <div class="cantidad" id="cant-debito">0 ventas</div>
+
+            <!-- PRODUCTOS Y ADMIN -->
+            <div class="col-productos">
+                <div class="tarjeta">
+                    <h2>📦 Productos</h2>
+                    <div class="grid-productos" id="grid-productos"></div>
+                </div>
+
+                <!-- SECCIÓN ADMIN — OCULTA POR DEFECTO -->
+                <div class="tarjeta seccion-admin" id="seccion-admin">
+                    <div class="aviso-admin">⚠️ ÁREA RESTRINGIDA — Solo para propietario</div>
+                    <h2>⚙️ Administración</h2>
+                    
+                    <h3 style="margin:10px 0; font-size:15px;">Agregar Producto</h3>
+                    <div class="fila-form">
+                        <input type="text" id="prod-codigo" placeholder="Código de barras">
+                        <input type="text" id="prod-nombre" placeholder="Nombre producto">
+                    </div>
+                    <div class="fila-form">
+                        <input type="number" step="0.01" id="prod-precio" placeholder="Precio venta">
+                        <input type="number" id="prod-stock" placeholder="Stock inicial">
+                        <select id="prod-tipo">
+                            <option value="unidad">Por Unidad</option>
+                            <option value="kilo">Por Kilo</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-verde" onclick="agregarProducto()">➕ Agregar</button>
+                    <button class="btn btn-rojo" onclick="eliminarProductoSeleccionado()">🗑️ Eliminar</button>
+                    
+                    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+                    
+                    <h3>🔐 Cambiar Claves</h3>
+                    <div class="fila-form">
+                        <input type="password" id="nueva-clave-acceso" placeholder="Nueva clave acceso">
+                        <input type="password" id="nueva-clave-admin" placeholder="Nueva clave admin">
+                    </div>
+                    <button class="btn btn-azul" onclick="guardarClaves()">💾 Guardar Claves</button>
+                    <button class="btn btn-rojo" style="margin-top:10px;" onclick="cerrarAdmin()">🔒 Cerrar Administración</button>
+                </div>
             </div>
-            <div class="cuadro-pago transferencia">
-                <div class="etiqueta">🔄 Transferencia</div>
-                <div class="monto" id="cuadro-transferencia">$0</div>
-                <div class="cantidad" id="cant-transferencia">0 ventas</div>
-            </div>
-        </div>
-        <div class="total-final">
-            <div class="etiqueta">💰 TOTAL DEL DÍA</div>
-            <div class="monto" id="total-dia">$0</div>
-            <div class="ventas" id="cantidad-ventas">0 ventas registradas</div>
-        </div>
-        <div class="caja-fisica">
-            <h4>📝 Conteo Físico de Caja</h4>
-            <div class="form-group">
-                <label>Dinero en efectivo que tienes en caja:</label>
-                <input type="number" id="caja-fisica-input" placeholder="0" oninput="calcularDiferencia()">
-            </div>
-            <div class="diferencia" id="diferencia-caja" style="display:none;"></div>
-        </div>
-        <h4>📋 Historial de Ventas</h4>
-        <div id="lista-ventas"></div>
-        <div class="acciones-cierre">
-            <button class="btn btn-print" onclick="imprimirCuadratura()">🖨️ Imprimir Cuadratura</button>
-            <button class="btn btn-danger" onclick="cerrarCaja()">🔒 Cerrar Caja</button>
-            <button class="btn btn-light" onclick="cerrarCuadratura()">Cerrar</button>
         </div>
     </div>
 </div>
 
 <script>
-const CLAVE_ACCESO = "1234";
-let escannerActivo = false;
-let lectorQR = null;
-let productoPendienteKilo = null;
-let metodoPagoActual = "efectivo";
+// ==================================================
+// CONFIGURACIÓN — CLAVES
+// ==================================================
+const CLAVE_ACCESO_DEFECTO = "1234";
+const CLAVE_ADMIN_DEFECTO = "admin123";
+const CLAVE_ACTIVACION_DEFECTO = "activar2026";
+const DIAS_PRUEBA = 30;
 
-function verificarAcceso() {
-    const clave = document.getElementById('clave-acceso').value.trim();
-    if (clave === CLAVE_ACCESO) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
-        cargarProductos();
-        actualizarFecha();
-        document.getElementById('codigo-busqueda').focus();
-    } else {
-        document.getElementById('msg-error').style.display = 'block';
-    }
+let claveAcceso = localStorage.getItem('claveAcceso');
+if (!claveAcceso || claveAcceso === '' || claveAcceso === 'null') {
+    claveAcceso = CLAVE_ACCESO_DEFECTO;
+    localStorage.setItem('claveAcceso', claveAcceso);
 }
 
-function actualizarFecha() {
-    const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-    document.getElementById('fecha-actual').textContent = new Date().toLocaleDateString('es-CL', opciones);
+let claveAdmin = localStorage.getItem('claveAdmin');
+if (!claveAdmin || claveAdmin === '' || claveAdmin === 'null') {
+    claveAdmin = CLAVE_ADMIN_DEFECTO;
+    localStorage.setItem('claveAdmin', claveAdmin);
 }
 
-let productos = JSON.parse(localStorage.getItem('mp_productos')) || [
-    { id: 1, codigo: "7801234567890", nombre: "Aceite Marolio 1L", precio: 2500, tipo: "unidad", stock: 24, categoria: "comestibles" },
-    { id: 2, codigo: "7802345678901", nombre: "Arroz Grano Largo 1kg", precio: 1200, tipo: "kilo", stock: 50, categoria: "comestibles" },
-    { id: 3, codigo: "7803456789012", nombre: "Leche Entera 1L", precio: 950, tipo: "unidad", stock: 30, categoria: "lacteos" },
-    { id: 4, codigo: "7804567890123", nombre: "Carne Molida", precio: 5990, tipo: "kilo", stock: 20, categoria: "otros" },
-    { id: 5, codigo: "7805678901234", nombre: "Coca Cola 1.5L", precio: 1500, tipo: "unidad", stock: 40, categoria: "bebidas" },
-    { id: 6, codigo: "7806789012345", nombre: "Queso Mantecoso", precio: 8900, tipo: "kilo", stock: 15, categoria: "lacteos" },
-    { id: 7, codigo: "7807890123456", nombre: "Huevo 30 unidades", precio: 3800, tipo: "unidad", stock: 12, categoria: "otros" },
-    { id: 8, codigo: "7808901234567", nombre: "Azúcar 1kg", precio: 1100, tipo: "unidad", stock: 35, categoria: "comestibles" }
+let fechaInstalacion = localStorage.getItem('fechaInstalacion');
+if (!fechaInstalacion) {
+    fechaInstalacion = new Date().toISOString();
+    localStorage.setItem('fechaInstalacion', fechaInstalacion);
+}
+const fechaVencimiento = new Date(fechaInstalacion);
+fechaVencimiento.setDate(fechaVencimiento.getDate() + DIAS_PRUEBA);
+
+let sistemaActivado = localStorage.getItem('sistemaActivado') === 'true';
+
+// PRODUCTOS INICIALES
+let productos = JSON.parse(localStorage.getItem('productos')) || [
+    { codigo: "260001", nombre: "Bandeja Dulce Tipo 1", precio: 3500, stock: 50, tipo: "unidad" },
+    { codigo: "260002", nombre: "Bandeja Dulce Tipo 2", precio: 3500, stock: 40, tipo: "unidad" },
+    { codigo: "260003", nombre: "Caramelos x Kilo", precio: 2800, stock: 20, tipo: "kilo" },
+    { codigo: "260004", nombre: "Chocolates Caja", precio: 4200, stock: 30, tipo: "unidad" }
 ];
 
-let carrito = [];
-let historialVentas = JSON.parse(localStorage.getItem('mp_ventas')) || [];
-let categoriaActiva = 'todos';
+let ventaActual = [];
+let caja = JSON.parse(localStorage.getItem('caja')) || { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
+let metodoPagoSeleccionado = 'efectivo';
+let escannerActivo = false;
+let codigoEscanner = null;
+let productosSugeridos = [];
 
-function guardarProductosLS() { localStorage.setItem('mp_productos', JSON.stringify(productos)); }
-function guardarVentasLS() { localStorage.setItem('mp_ventas', JSON.stringify(historialVentas)); }
-
-function buscarPorCodigo() {
-    const codigo = document.getElementById('codigo-busqueda').value.trim();
-    if (!codigo) return;
-    const prod = productos.find(p => p.codigo === codigo);
-    if (prod) {
-        agregarAlCarritoPorId(prod.id);
-        document.getElementById('codigo-busqueda').value = '';
-    } else {
-        alert(`⚠️ Código "${codigo}" no encontrado`);
+// ==================================================
+// INICIO
+// ==================================================
+window.onload = function() {
+    document.getElementById('seccion-admin').style.display = 'none';
+    const hoy = new Date();
+    if (hoy > fechaVencimiento && !sistemaActivado) {
+        document.getElementById('bloqueo-pantalla').style.display = 'flex';
+        return;
     }
-    document.getElementById('codigo-busqueda').focus();
+    const diasRestantes = Math.ceil((fechaVencimiento - hoy) / (1000 * 60 * 60 * 24));
+    if (diasRestantes > 0 && !sistemaActivado) {
+        document.getElementById('aviso-prueba').style.display = 'block';
+        document.getElementById('fecha-vencimiento').textContent = `${fechaVencimiento.toLocaleDateString()} (${diasRestantes} días restantes)`;
+    }
+};
+
+function cerrarAviso() {
+    document.getElementById('aviso-prueba').style.display = 'none';
 }
 
+// ==================================================
+// LOGIN
+// ==================================================
+function verificarClave() {
+    const claveIngresada = document.getElementById('clave-acceso').value;
+    if (claveIngresada === claveAcceso) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        renderizarProductos();
+        actualizarCaja();
+        setTimeout(() => document.getElementById('buscar-producto').focus(), 300);
+    } else {
+        document.getElementById('msg-error').style.display = 'block';
+        document.getElementById('clave-acceso').value = '';
+    }
+}
+
+function activarSistema() {
+    const clave = document.getElementById('clave-activacion').value;
+    if (clave === CLAVE_ACTIVACION_DEFECTO) {
+        sistemaActivado = true;
+        localStorage.setItem('sistemaActivado', 'true');
+        document.getElementById('bloqueo-pantalla').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+    } else {
+        alert('Clave incorrecta.');
+    }
+}
+
+// ==================================================
+// 🔍 BÚSQUEDA
+// ==================================================
+function buscarSugerencias(texto) {
+    const sugerenciasDiv = document.getElementById('sugerencias');
+    texto = texto.trim().toLowerCase();
+    if (texto.length < 1) { sugerenciasDiv.style.display = 'none'; return; }
+    productosSugeridos = productos.filter(p => p.codigo.toLowerCase().includes(texto) || p.nombre.toLowerCase().includes(texto)).slice(0, 8);
+    if (productosSugeridos.length === 0) { sugerenciasDiv.style.display = 'none'; return; }
+    sugerenciasDiv.innerHTML = '';
+    productosSugeridos.forEach((prod) => {
+        const item = document.createElement('div');
+        item.className = 'sugerencia-item';
+        item.innerHTML = `<strong>${prod.nombre}</strong> — $${prod.precio.toLocaleString()} <small>(${prod.codigo})</small>`;
+        item.onclick = () => {
+            const indice = productos.findIndex(p => p.codigo === prod.codigo);
+            agregarProductoAVenta(indice);
+            document.getElementById('buscar-producto').value = '';
+            sugerenciasDiv.style.display = 'none';
+        };
+        sugerenciasDiv.appendChild(item);
+    });
+    sugerenciasDiv.style.display = 'block';
+}
+
+function seleccionarPrimero() {
+    const sugerenciasDiv = document.getElementById('sugerencias');
+    if (productosSugeridos.length > 0) {
+        const indice = productos.findIndex(p => p.codigo === productosSugeridos[0].codigo);
+        agregarProductoAVenta(indice);
+        document.getElementById('buscar-producto').value = '';
+        sugerenciasDiv.style.display = 'none';
+    }
+}
+
+document.addEventListener('click', (e) => {
+    const buscar = document.getElementById('buscar-producto');
+    const sugerencias = document.getElementById('sugerencias');
+    if (!buscar.contains(e.target) && !sugerencias.contains(e.target)) {
+        sugerencias.style.display = 'none';
+    }
+});
+
+// ==================================================
+// ESCÁNER
+// ==================================================
 function toggleEscaner() {
     const reader = document.getElementById('reader');
     if (!escannerActivo) {
         reader.style.display = 'block';
-        escannerActivo = true;
-        if (!lectorQR) lectorQR = new Html5Qrcode("reader");
-        lectorQR.start(
+        codigoEscanner = new Html5Qrcode("reader");
+        codigoEscanner.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 120 } },
+            { fps: 10, qrbox: { width: 250, height: 150 } },
             (decodedText) => {
-                lectorQR.stop();
-                escannerActivo = false;
-                reader.style.display = 'none';
-                document.getElementById('codigo-busqueda').value = decodedText;
-                buscarPorCodigo();
+                document.getElementById('buscar-producto').value = decodedText;
+                seleccionarPrimero();
             },
-            () => {}
-        ).catch(() => {
-            alert("❌ No se pudo acceder a la cámara. Verifica los permisos.");
+            (error) => {}
+        ).catch(err => alert('No se pudo acceder a la cámara'));
+        escannerActivo = true;
+    } else {
+        codigoEscanner.stop().then(() => {
             reader.style.display = 'none';
             escannerActivo = false;
         });
-    } else {
-        if (lectorQR) lectorQR.stop().catch(()=>{});
-        reader.style.display = 'none';
-        escannerActivo = false;
     }
 }
 
-function cargarProductos() {
-    const grid = document.getElementById('products-grid');
-    let lista = categoriaActiva !== 'todos' ? productos.filter(p => p.categoria === categoriaActiva) : productos;
-    const busqueda = document.getElementById('buscar-producto').value.toLowerCase();
-    if (busqueda) lista = lista.filter(p => p.nombre.toLowerCase().includes(busqueda));
-    grid.innerHTML = lista.map(p => `
-        <div class="product-card" onclick="agregarAlCarritoPorId(${p.id})">
-            <div class="codigo">📦 ${p.codigo}</div>
-            <span class="tipo-venta ${p.tipo === 'unidad' ? 'tipo-unidad' : 'tipo-kilo'}">
-                ${p.tipo === 'unidad' ? '📦 Unidad' : '⚖️ Kilo'}
-            </span>
-            <h4>${p.nombre}</h4>
-            <p class="price">$${p.precio.toLocaleString('es-CL')}${p.tipo === 'kilo' ? '/kg' : ''}</p>
-            <p class="stock">Stock: ${p.stock}</p>
-        </div>
-    `).join('');
+// ==================================================
+// PRODUCTOS
+// ==================================================
+function guardarProductos() { localStorage.setItem('productos', JSON.stringify(productos)); }
+
+function renderizarProductos() {
+    const grid = document.getElementById('grid-productos');
+    grid.innerHTML = '';
+    productos.forEach((prod, index) => {
+        const card = document.createElement('div');
+        card.className = 'producto-card';
+        card.innerHTML = `
+            <div class="producto-nombre">${prod.nombre}</div>
+            <div class="producto-precio">$${prod.precio.toLocaleString()}</div>
+            <div class="producto-stock">Stock: ${prod.stock}</div>
+            ${prod.tipo === 'kilo' ? '<span class="etiqueta-kilo">POR KILO</span>' : ''}
+        `;
+        card.onclick = () => agregarProductoAVenta(index);
+        grid.appendChild(card);
+    });
 }
 
-function seleccionarCategoria(btn, cat) {
-    categoriaActiva = cat;
-    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    cargarProductos();
-}
-
-function agregarAlCarritoPorId(id) {
-    const prod = productos.find(p => p.id === id);
-    if (!prod) return;
-    if (prod.stock <= 0) { alert(`⚠️ "${prod.nombre}" sin stock disponible`); return; }
+function agregarProductoAVenta(indice) {
+    const prod = productos[indice];
+    if (prod.stock <= 0 && prod.tipo === 'unidad') { alert('⚠️ Sin stock disponible'); return; }
+    let cantidad = 1;
     if (prod.tipo === 'kilo') {
-        productoPendienteKilo = prod;
-        document.getElementById('peso-nombre-prod').textContent = prod.nombre + ' — $' + prod.precio.toLocaleString('es-CL') + '/kg';
-        document.getElementById('input-peso').value = '';
-        document.getElementById('modal-peso').style.display = 'flex';
-        return;
+        const peso = prompt(`Peso en kilos para ${prod.nombre}:`, "1");
+        if (!peso) return;
+        cantidad = parseFloat(peso);
+        if (isNaN(cantidad) || cantidad <= 0) return;
     }
-    const itemExistente = carrito.find(i => i.id === id);
-    if (itemExistente) {
-        itemExistente.cantidad++;
-        itemExistente.subtotal = itemExistente.cantidad * prod.precio;
-    } else {
-        carrito.push({ id: prod.id, nombre: prod.nombre, precio: prod.precio, tipo: prod.tipo, cantidad: 1, peso: null, subtotal: prod.precio });
-    }
-    prod.stock--;
-    guardarProductosLS();
-    actualizarCarrito();
-    cargarProductos();
+    const subtotal = prod.precio * cantidad;
+    ventaActual.push({ indice, codigo: prod.codigo, nombre: prod.nombre, precio: prod.precio, cantidad, subtotal, tipo: prod.tipo });
+    if (prod.tipo === 'unidad') productos[indice].stock -= cantidad;
+    actualizarListaVenta();
+    guardarProductos();
+    renderizarProductos();
+    document.getElementById('buscar-producto').focus();
 }
 
-function cerrarModalPeso() { document.getElementById('modal-peso').style.display = 'none'; productoPendienteKilo = null; }
-
-function confirmarPeso() {
-    const peso = parseFloat(document.getElementById('input-peso').value);
-    if (!peso || peso <= 0) { alert("⚠️ Ingresa un peso válido (ej: 0.750)"); return; }
-    if (!productoPendienteKilo) return;
-    const subtotal = Math.round(productoPendienteKilo.precio * peso);
-    carrito.push({ id: productoPendienteKilo.id, nombre: productoPendienteKilo.nombre, precio: productoPendienteKilo.precio, tipo: 'kilo', cantidad: 1, peso: peso, subtotal: subtotal });
-    productoPendienteKilo.stock--;
-    guardarProductosLS();
-    cerrarModalPeso();
-    actualizarCarrito();
-    cargarProductos();
-}
-
-function actualizarCarrito() {
-    const container = document.getElementById('cart-items');
-    const totalEl = document.getElementById('total-carrito');
-    if (carrito.length === 0) {
-        container.innerHTML = '<div class="cart-empty">Escribe un código, escanea o toca un producto</div>';
-        totalEl.textContent = '$0';
-        document.getElementById('fila-vuelto').style.display = 'none';
-        return;
-    }
-    container.innerHTML = carrito.map(item => `
-        <div class="cart-item">
-            <div class="cart-item-top"><strong>${item.nombre}</strong><span>$${item.subtotal.toLocaleString('es-CL')}</span></div>
-            ${item.tipo === 'kilo' ? `<span class="cart-item-peso">⚖️ ${item.peso.toFixed(3)} kg × $${item.precio.toLocaleString('es-CL')}/kg</span>` : `<span>Cantidad: ${item.cantidad}</span>`}
-        </div>
-    `).join('');
-    const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
-    totalEl.textContent = '$' + total.toLocaleString('es-CL');
+function actualizarListaVenta() {
+    const tbody = document.getElementById('lista-items');
+    tbody.innerHTML = '';
+    let total = 0;
+    ventaActual.forEach((item, index) => {
+        total += item.subtotal;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.nombre}</td>
+            <td>${item.tipo === 'kilo' ? item.cantidad.toFixed(3) + ' kg' : item.cantidad}</td>
+            <td>$${item.precio.toLocaleString()}</td>
+            <td>$${item.subtotal.toLocaleString()}</td>
+            <td class="eliminar-item" onclick="eliminarItemVenta(${index})">✕</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('total-venta').textContent = total.toLocaleString();
     calcularVuelto();
+}
 
-    if (metodoPagoActual === 'efectivo') {
-        document.getElementById('monto-pago').focus();
-    } else {
-        document.getElementById('codigo-busqueda').focus();
+function eliminarItemVenta(index) {
+    const item = ventaActual[index];
+    if (item.tipo === 'unidad') { productos[item.indice].stock += item.cantidad; guardarProductos(); renderizarProductos(); }
+    ventaActual.splice(index, 1);
+    actualizarListaVenta();
+}
+
+function limpiarVenta() {
+    if (ventaActual.length > 0 && !confirm('¿Limpiar venta?')) return;
+    ventaActual.forEach(item => { if (item.tipo === 'unidad') productos[item.indice].stock += item.cantidad; });
+    ventaActual = [];
+    guardarProductos();
+    renderizarProductos();
+    actualizarListaVenta();
+    document.getElementById('monto-recibido').value = '';
+    document.getElementById('vuelto').textContent = '0';
+    document.getElementById('buscar-producto').focus();
+}
+
+// ==================================================
+// 🔄 SELECCIÓN DE PAGO — CORREGIDO ✅
+// ==================================================
+function seleccionarPago(elemento) {
+    document.querySelectorAll('.medio-pago').forEach(el => el.classList.remove('seleccionado'));
+    elemento.classList.add('seleccionado');
+    metodoPagoSeleccionado = elemento.dataset.metodo;
+
+    const montoInput = document.getElementById('monto-recibido');
+    const vueltoFila = document.getElementById('vuelto-fila');
+    const infoTexto = document.getElementById('info-pago-texto');
+    const totalVenta = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
+
+    // ✅ EFECTIVO → Escribir monto, calcular vuelto
+    if (metodoPagoSeleccionado === 'efectivo') {
+        montoInput.disabled = false;
+        montoInput.value = '';
+        montoInput.placeholder = '0';
+        vueltoFila.classList.remove('vuelto-oculto');
+        vueltoFila.style.display = 'block';
+        infoTexto.textContent = '— Escriba el monto recibido';
+        calcularVuelto();
+    }
+    // ✅ DÉBITO / TRANSFERENCIA → MONTO = TOTAL, SIN VUELTO
+    else {
+        montoInput.disabled = true;
+        montoInput.value = totalVenta;
+        montoInput.placeholder = 'Auto';
+        vueltoFila.classList.add('vuelto-oculto');
+        vueltoFila.innerHTML = 'Vuelto: — (Pago exacto)';
+        infoTexto.textContent = '— Monto = Total automático';
     }
 }
 
-function seleccionarPago(metodo) {
-    metodoPagoActual = metodo;
-    document.querySelectorAll('.metodo-pago').forEach(el => el.classList.remove('seleccionado'));
-    document.getElementById(`metodo-${metodo}`).classList.add('seleccionado');
-    document.getElementById('seccion-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
-    document.getElementById('fila-vuelto').style.display = 'none';
-
-    if (metodo === 'efectivo') {
-        document.getElementById('monto-pago').focus();
-    } else {
-        document.getElementById('codigo-busqueda').focus();
-    }
-}
-
+// ==================================================
+// 💰 CÁLCULO DE VUELTO — CORREGIDO ✅
+// ==================================================
 function calcularVuelto() {
-    const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
-    const monto = parseFloat(document.getElementById('monto-pago').value) || 0;
-    const filaVuelto = document.getElementById('fila-vuelto');
-    if (metodoPagoActual === 'efectivo' && monto >= total && total > 0) {
-        document.getElementById('valor-vuelto').textContent = '$' + (monto - total).toLocaleString('es-CL');
-        filaVuelto.style.display = 'flex';
-    } else { filaVuelto.style.display = 'none'; }
-}
-
-function cobrarVenta() {
-    if (carrito.length === 0) { alert("⚠️ El carrito está vacío"); return; }
-    const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
-    if (metodoPagoActual === 'efectivo') {
-        const monto = parseFloat(document.getElementById('monto-pago').value) || 0;
-        if (monto < total) { alert(`⚠️ Monto insuficiente. Faltan $${(total - monto).toLocaleString('es-CL')}`); return; }
+    const total = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
+    
+    // ⚡ Si NO es efectivo, NO se calcula vuelto
+    if (metodoPagoSeleccionado !== 'efectivo') {
+        document.getElementById('vuelto').textContent = '—';
+        return;
     }
-    historialVentas.unshift({ id: Date.now(), fecha: new Date().toISOString(), items: [...carrito], total: total, metodo: metodoPagoActual });
-    guardarVentasLS();
-    alert(`✅ Venta registrada!\nTotal: $${total.toLocaleString('es-CL')}\nPago: ${metodoPagoActual.toUpperCase()}`);
-    carrito = []; document.getElementById('monto-pago').value = ''; actualizarCarrito();
-    document.getElementById('codigo-busqueda').focus();
+    
+    const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
+    const vuelto = recibido - total;
+    document.getElementById('vuelto').textContent = (vuelto > 0 ? vuelto : 0).toLocaleString();
 }
 
-function limpiarCarrito() {
-    if (carrito.length === 0) return;
-    if (!confirm("¿Limpiar todo el carrito? Los productos vuelven a stock")) return;
-    carrito.forEach(item => { const prod = productos.find(p => p.id === item.id); if (prod) prod.stock += item.cantidad || 1; });
-    carrito = []; document.getElementById('monto-pago').value = ''; guardarProductosLS(); actualizarCarrito(); cargarProductos();
-    document.getElementById('codigo-busqueda').focus();
+// ==================================================
+// ✅ FINALIZAR VENTA — SIN ERROR EN DÉBITO ✅
+// ==================================================
+function finalizarVenta() {
+    const total = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
+    if (total === 0) { alert('Sin productos'); return; }
+
+    // ⚡ SOLO VALIDAR MONTO EN EFECTIVO
+    if (metodoPagoSeleccionado === 'efectivo') {
+        const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
+        if (recibido < total) {
+            alert('❌ Monto insuficiente');
+            return;
+        }
+    }
+
+    // ✅ Registrar venta en caja
+    caja[metodoPagoSeleccionado] += total;
+    localStorage.setItem('caja', JSON.stringify(caja));
+    actualizarCaja();
+
+    // Mensaje según método
+    let mensaje = `✅ Venta finalizada!\nTotal: $${total.toLocaleString()}`;
+    if (metodoPagoSeleccionado === 'efectivo') {
+        const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
+        mensaje += `\nVuelto: $${(recibido - total).toLocaleString()}`;
+    } else {
+        mensaje += `\nPago: ${metodoPagoSeleccionado.toUpperCase()} — Monto exacto`;
+    }
+    alert(mensaje);
+
+    // Limpiar venta
+    ventaActual = [];
+    actualizarListaVenta();
+    document.getElementById('monto-recibido').value = '';
+    document.getElementById('vuelto').textContent = '0';
+    // Volver a efectivo por defecto
+    document.querySelector('.medio-pago').click();
+    document.getElementById('buscar-producto').focus();
 }
 
-function pedirClaveAdmin() {
-    const claveIngresada = prompt("🔐 Ingrese la clave de Administrador:");
-    if (claveIngresada === CLAVE_ACCESO) {
-        abrirAdmin();
-    } else if (claveIngresada !== null) {
-        alert("❌ Clave incorrecta");
+// ==================================================
+// 🖨️ IMPRESIÓN DE CAJA
+// ==================================================
+function previsualizarCaja() {
+    const totalCaja = caja.efectivo + caja.debito + caja.transferencia;
+    const fechaHora = new Date().toLocaleString('es-CL', { dateStyle: 'full', timeStyle: 'short' });
+    const ticket = document.getElementById('contenido-ticket');
+    ticket.innerHTML = `
+        <div class="titulo">🛒 MINIMARKET PRO</div>
+        <div style="text-align:center; font-size:12px; margin-bottom:10px;">Sistema de Ventas POS</div>
+        <div class="divisor"></div>
+        <div style="text-align:center; font-size:13px; margin-bottom:10px;">FECHA: ${fechaHora}</div>
+        <div class="divisor"></div>
+        <div class="fila"><span>💵 Efectivo:</span><span>$${caja.efectivo.toLocaleString()}</span></div>
+        <div class="fila"><span>💳 Débito:</span><span>$${caja.debito.toLocaleString()}</span></div>
+        <div class="fila"><span>🔄 Transferencia:</span><span>$${caja.transferencia.toLocaleString()}</span></div>
+        <div class="divisor"></div>
+        <div class="fila total-final"><span>TOTAL CAJA:</span><span>$${totalCaja.toLocaleString()}</span></div>
+        <div class="divisor"></div>
+        <div class="pie">FIRMA RESPONSABLE: ___________________<br><br>¡Gracias por su trabajo!</div>
+    `;
+    document.getElementById('ventana-impresion').style.display = 'flex';
+}
+
+function cerrarVentanaImpresion() {
+    document.getElementById('ventana-impresion').style.display = 'none';
+}
+
+// ==================================================
+// CUADRATURA Y CIERRE DE CAJA
+// ==================================================
+function actualizarCaja() {
+    document.getElementById('caja-efectivo').textContent = '$' + caja.efectivo.toLocaleString();
+    document.getElementById('caja-debito').textContent = '$' + caja.debito.toLocaleString();
+    document.getElementById('caja-transferencia').textContent = '$' + caja.transferencia.toLocaleString();
+    const total = caja.efectivo + caja.debito + caja.transferencia;
+    document.getElementById('caja-total').textContent = '$' + total.toLocaleString();
+}
+
+function cerrarCaja() {
+    const total = caja.efectivo + caja.debito + caja.transferencia;
+    if (!confirm(`📊 CIERRE DE CAJA — ${new Date().toLocaleDateString()}\n\n💵 Efectivo: $${caja.efectivo.toLocaleString()}\n💳 Débito: $${caja.debito.toLocaleString()}\n🔄 Transferencia: $${caja.transferencia.toLocaleString()}\n\n💰 TOTAL: $${total.toLocaleString()}\n\n¿Ver reporte e imprimir?`)) return;
+    previsualizarCaja();
+    setTimeout(() => {
+        if (confirm('¿Reiniciar caja ahora?')) {
+            caja = { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
+            localStorage.setItem('caja', JSON.stringify(caja));
+            actualizarCaja();
+            cerrarVentanaImpresion();
+            alert('✅ Caja cerrada y reiniciada.');
+        }
+    }, 500);
+}
+
+// ==================================================
+// 🔒 ADMINISTRACIÓN
+// ==================================================
+function mostrarAdmin() {
+    const claveIngresada = prompt('🔐 Clave de Administrador:');
+    if (claveIngresada === claveAdmin) {
+        document.getElementById('seccion-admin').style.display = 'block';
+        alert('✅ Acceso concedido — Área de Administración');
+    } else {
+        alert('❌ Acceso denegado — Clave incorrecta');
+        document.getElementById('seccion-admin').style.display = 'none';
     }
 }
 
-function pedirClaveCuadratura() {
-    const claveIngresada = prompt("🔐 Ingrese la clave de Cuadratura:");
-    if (claveIngresada === CLAVE_ACCESO) {
-        abrirCuadratura();
-    } else if (claveIngresada !== null) {
-        alert("❌ Clave incorrecta");
-    }
+function cerrarAdmin() {
+    document.getElementById('seccion-admin').style.display = 'none';
+    alert('🔒 Administración cerrada');
 }
 
-function abrirAdmin() { document.getElementById('modal-admin').style.display = 'flex'; cargarListaAdmin(); }
-function cerrarAdmin() { document.getElementById('modal-admin').style.display = 'none'; delete window.editandoId; document.getElementById('codigo-busqueda').focus(); }
-function cargarListaAdmin() {
-    const lista = document.getElementById('lista-productos-admin');
-    lista.innerHTML = productos.map(p => `
-        <div class="product-item">
-            <div><strong>${p.nombre}</strong><br>📦 ${p.codigo} | 💰 $${p.precio.toLocaleString('es-CL')} | ${p.tipo === 'unidad' ? '📦 Unidad' : '⚖️ Kilo'} | Stock: ${p.stock}</div>
-            <div><button class="btn-sm btn-edit" onclick="editarProducto(${p.id})">✏️</button><button class="btn-sm btn-delete" onclick="eliminarProducto(${p.id})">🗑️</button></div>
-        </div>
-    `).join('');
-}
-function editarProducto(id) {
-    const prod = productos.find(p => p.id === id); if (!prod) return;
-    document.getElementById('prod-codigo').value = prod.codigo;
-    document.getElementById('prod-nombre').value = prod.nombre;
-    document.getElementById('prod-precio').value = prod.precio;
-    document.getElementById('prod-tipo').value = prod.tipo;
-    document.getElementById('prod-stock').value = prod.stock;
-    document.getElementById('prod-categoria').value = prod.categoria;
-    window.editandoId = id;
-}
-function eliminarProducto(id) { if (!confirm("¿Eliminar este producto?")) return; productos = productos.filter(p => p.id !== id); guardarProductosLS(); cargarProductos(); cargarListaAdmin(); }
-function guardarProducto() {
+function agregarProducto() {
     const codigo = document.getElementById('prod-codigo').value.trim();
     const nombre = document.getElementById('prod-nombre').value.trim();
     const precio = parseFloat(document.getElementById('prod-precio').value);
+    const stock = parseInt(document.getElementById('prod-stock').value) || 0;
     const tipo = document.getElementById('prod-tipo').value;
-    const stock = parseInt(document.getElementById('prod-stock').value);
-    const categoria = document.getElementById('prod-categoria').value;
-    if (!codigo || !nombre || isNaN(precio) || isNaN(stock)) { alert("⚠️ Completa todos los campos"); return; }
-    if (productos.some(p => p.codigo === codigo && p.id !== window.editandoId)) { alert("⚠️ Ese código ya existe en otro producto"); return; }
-    if (window.editandoId) {
-        const prod = productos.find(p => p.id === window.editandoId);
-        Object.assign(prod, { codigo, nombre, precio, tipo, stock, categoria });
-        delete window.editandoId; alert("✅ Producto actualizado");
-    } else {
-        const nuevoId = productos.length > 0 ? Math.max(...productos.map(p => p.id)) + 1 : 1;
-        productos.push({ id: nuevoId, codigo, nombre, precio, tipo, stock, categoria });
-        alert("✅ Producto agregado");
-    }
-    guardarProductosLS(); cargarProductos(); cargarListaAdmin();
+    if (!codigo || !nombre || isNaN(precio) || precio <= 0) { alert('Complete todos los campos.'); return; }
+    if (productos.some(p => p.codigo === codigo)) { alert('⚠️ Código ya existe.'); return; }
+    productos.push({ codigo, nombre, precio, stock, tipo });
+    guardarProductos();
+    renderizarProductos();
     document.getElementById('prod-codigo').value = '';
     document.getElementById('prod-nombre').value = '';
     document.getElementById('prod-precio').value = '';
     document.getElementById('prod-stock').value = '';
+    alert('✅ Producto agregado.');
 }
 
-function abrirCuadratura() { document.getElementById('modal-cuadratura').style.display = 'flex'; actualizarCuadratura(); }
-function cerrarCuadratura() { document.getElementById('modal-cuadratura').style.display = 'none'; document.getElementById('codigo-busqueda').focus(); }
+function eliminarProductoSeleccionado() {
+    const codigo = prompt('Código del producto a eliminar:');
+    if (!codigo) return;
+    const indice = productos.findIndex(p => p.codigo === codigo);
+    if (indice === -1) { alert('No encontrado'); return; }
+    if (!confirm(`¿Eliminar "${productos[indice].nombre}"?`)) return;
+    productos.splice(indice, 1);
+    guardarProductos();
+    renderizarProductos();
+    alert('✅ Eliminado.');
+}
 
-function actualizarCuadratura() {
-    const efectivo = historialVentas.filter(v => v.metodo === 'efectivo').reduce((s, v) => s + v.total, 0);
-    const debito = historialVentas.filter(v => v.metodo === 'debito').reduce((s, v) => s + v.total, 0);
-    const transferencia = historialVentas.filter(v => v.metodo === 'transferencia').reduce((s, v) => s + v.total, 0);
-    const total = efectivo + debito + transferencia;
-    document.getElementById('cuadro-efectivo').textContent = '$' + efectivo.toLocaleString('es-CL');
-    document.getElementById('cuadro-debito').textContent = '$' + debito.toLocaleString('es-CL');
-    document.getElementById('cuadro-transferencia').textContent = '$' + transferencia.toLocaleString('es-CL');
-    document.getElementById('total-dia').textContent = '$' + total.toLocaleString('es-CL');
-    document.getElementById('cant-efectivo').textContent = historialVentas.filter(v => v.metodo === 'efectivo').length + ' ventas';
-    document.getElementById('cant-debito').textContent = historialVentas.filter(v => v.metodo === 'debito').length + ' ventas';
-    document.getElementById('cant-transferencia').textContent = historialVentas.filter(v => v.metodo === 'transferencia').length + ' ventas';
-    document.getElementById('cantidad-ventas').textContent = historialVentas.length + ' ventas registradas';
-    
-    const ahora = new Date();
-    document.getElementById('texto-fecha-impresion').textContent = "📅 Fecha de Emisión: " + ahora.toLocaleString('es-CL');
-
-    const lista = document.getElementById('lista-ventas');
-    if (historialVentas.length === 0) { lista.innerHTML = '<div class="sin-ventas">No hay ventas registradas</div>'; }
-    else {
-        lista.innerHTML = historialVentas.map(v => `
-            <div class="venta-item">
-                <strong>${new Date(v.fecha).toLocaleString('es-CL')}</strong> — Total: $${v.total.toLocaleString('es-CL')}
-                <span class="venta-metodo venta-${v.metodo}">${v.metodo.toUpperCase()}</span>
-            </div>
-        `).join('');
+function guardarClaves() {
+    const nuevaAcceso = document.getElementById('nueva-clave-acceso').value.trim();
+    const nuevaAdmin = document.getElementById('nueva-clave-admin').value.trim();
+    if (nuevaAcceso) {
+        claveAcceso = nuevaAcceso;
+        localStorage.setItem('claveAcceso', claveAcceso);
     }
-    calcularDiferencia();
+    if (nuevaAdmin) {
+        claveAdmin = nuevaAdmin;
+        localStorage.setItem('claveAdmin', claveAdmin);
+    }
+    alert('✅ Claves actualizadas. ¡Recuerda anotarlas!');
+    document.getElementById('nueva-clave-acceso').value = '';
+    document.getElementById('nueva-clave-admin').value = '';
+    cerrarAdmin();
 }
 
-function imprimirCuadratura() {
-    actualizarCuadratura();
-    window.print();
+// ==================================================
+// DESCARGA
+// ==================================================
+function descargarCodigo() {
+    if (!confirm('¿Descargar como index.html?')) return;
+    const codigoCompleto = document.documentElement.outerHTML;
+    const blob = new Blob([codigoCompleto], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('✅ Descargado.');
 }
 
-function calcularDiferencia() {
-    const efectivoSistema = historialVentas.filter(v => v.metodo === 'efectivo').reduce((s, v) => s + v.total, 0);
-    const cajaFisica = parseFloat(document.getElementById('caja-fisica-input').value) || 0;
-    const diferencia = cajaFisica - efectivoSistema;
-    const el = document.getElementById('diferencia-caja');
-    if (efectivoSistema === 0 && cajaFisica === 0) { el.style.display = 'none'; return; }
-    el.style.display = 'block';
-    if (diferencia === 0) { el.textContent = "✅ Cuadra perfecto: $0 de diferencia"; el.className = "diferencia positiva"; }
-    else if (diferencia > 0) { el.textContent = `💰 Sobra: $${diferencia.toLocaleString('es-CL')}`; el.className = "diferencia positiva"; }
-    else { el.textContent = `📉 Falta: $${Math.abs(diferencia).toLocaleString('es-CL')}`; el.className = "diferencia negativa"; }
-}
-
-function cerrarCaja() {
-    if (!confirm("⚠️ ¿Borrar TODO el historial de ventas? No se puede deshacer.")) return;
-    historialVentas = [];
-    guardarVentasLS();
-    document.getElementById('caja-fisica-input').value = '';
-    actualizarCuadratura();
-    alert("✅ Caja cerrada y limpia");
-}
 </script>
 </body>
 </html>
