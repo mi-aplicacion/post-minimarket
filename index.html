@@ -43,6 +43,7 @@
         .btn-success { background: #10b981; color: #fff; }
         .btn-light { background: #f1f5f9; color: #334155; }
         .btn-danger { background: #ef4444; color: #fff; }
+        .btn-print { background: #0284c7; color: #fff; }
         
         .busqueda-codigo { display: flex; gap: 8px; margin-bottom: 12px; }
         .busqueda-codigo input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
@@ -144,7 +145,20 @@
         .sin-ventas { text-align: center; color: #94a3b8; padding: 30px; }
 
         .acciones-cierre { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-        .acciones-cierre button { flex: 1; min-width: 140px; }
+        .acciones-cierre button { flex: 1; min-width: 130px; }
+
+        .fecha-impresion { display: none; font-size: 14px; color: #333; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+
+        /* Ajuste estricto para que la impresión entre limpia en una sola página */
+        @media print {
+            @page { size: auto; margin: 10mm; }
+            body * { visibility: hidden; }
+            #modal-cuadratura, #modal-cuadratura * { visibility: visible; }
+            #modal-cuadratura { position: absolute; inset: 0; background: #fff; padding: 0; }
+            .modal-content { width: 100% !important; height: auto !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+            .close-btn, .acciones-cierre { display: none !important; }
+            .fecha-impresion { display: block !important; }
+        }
 
         @media (max-width: 900px) {
             .app-container { flex-direction: column; }
@@ -182,12 +196,12 @@
     <section class="products-section">
         <div class="top-bar">
             <div class="logo-area">
-                <h1>🛒 Minimarket Pro-R.S</h1>
+                <h1>🛒 Minimarket Pro</h1>
                 <span id="fecha-actual"></span>
             </div>
             <div class="top-actions">
-                <button class="btn btn-primary" onclick="abrirAdmin()">⚙️ Admin</button>
-                <button class="btn btn-light" onclick="abrirCuadratura()">📊 Cuadratura de Caja</button>
+                <button class="btn btn-primary" onclick="pedirClaveAdmin()">⚙️ Admin</button>
+                <button class="btn btn-light" onclick="pedirClaveCuadratura()">📊 Cuadratura de Caja</button>
             </div>
         </div>
 
@@ -297,6 +311,9 @@
             <h3>📊 Cuadratura de Caja</h3>
             <button class="close-btn" onclick="cerrarCuadratura()">×</button>
         </div>
+        
+        <div class="fecha-impresion" id="texto-fecha-impresion"></div>
+
         <div class="cuadratura-resumen">
             <div class="cuadro-pago efectivo">
                 <div class="etiqueta">💵 Efectivo</div>
@@ -330,7 +347,8 @@
         <h4>📋 Historial de Ventas</h4>
         <div id="lista-ventas"></div>
         <div class="acciones-cierre">
-            <button class="btn btn-danger" onclick="cerrarCaja()">🔒 Cerrar Caja (Borrar Todo)</button>
+            <button class="btn btn-print" onclick="imprimirCuadratura()">🖨️ Imprimir Cuadratura</button>
+            <button class="btn btn-danger" onclick="cerrarCaja()">🔒 Cerrar Caja</button>
             <button class="btn btn-light" onclick="cerrarCuadratura()">Cerrar</button>
         </div>
     </div>
@@ -350,6 +368,7 @@ function verificarAcceso() {
         document.getElementById('main-app').style.display = 'flex';
         cargarProductos();
         actualizarFecha();
+        document.getElementById('codigo-busqueda').focus();
     } else {
         document.getElementById('msg-error').style.display = 'block';
     }
@@ -388,6 +407,7 @@ function buscarPorCodigo() {
     } else {
         alert(`⚠️ Código "${codigo}" no encontrado`);
     }
+    document.getElementById('codigo-busqueda').focus();
 }
 
 function toggleEscaner() {
@@ -501,6 +521,12 @@ function actualizarCarrito() {
     const total = carrito.reduce((sum, i) => sum + i.subtotal, 0);
     totalEl.textContent = '$' + total.toLocaleString('es-CL');
     calcularVuelto();
+
+    if (metodoPagoActual === 'efectivo') {
+        document.getElementById('monto-pago').focus();
+    } else {
+        document.getElementById('codigo-busqueda').focus();
+    }
 }
 
 function seleccionarPago(metodo) {
@@ -509,6 +535,12 @@ function seleccionarPago(metodo) {
     document.getElementById(`metodo-${metodo}`).classList.add('seleccionado');
     document.getElementById('seccion-efectivo').style.display = metodo === 'efectivo' ? 'block' : 'none';
     document.getElementById('fila-vuelto').style.display = 'none';
+
+    if (metodo === 'efectivo') {
+        document.getElementById('monto-pago').focus();
+    } else {
+        document.getElementById('codigo-busqueda').focus();
+    }
 }
 
 function calcularVuelto() {
@@ -532,6 +564,7 @@ function cobrarVenta() {
     guardarVentasLS();
     alert(`✅ Venta registrada!\nTotal: $${total.toLocaleString('es-CL')}\nPago: ${metodoPagoActual.toUpperCase()}`);
     carrito = []; document.getElementById('monto-pago').value = ''; actualizarCarrito();
+    document.getElementById('codigo-busqueda').focus();
 }
 
 function limpiarCarrito() {
@@ -539,10 +572,29 @@ function limpiarCarrito() {
     if (!confirm("¿Limpiar todo el carrito? Los productos vuelven a stock")) return;
     carrito.forEach(item => { const prod = productos.find(p => p.id === item.id); if (prod) prod.stock += item.cantidad || 1; });
     carrito = []; document.getElementById('monto-pago').value = ''; guardarProductosLS(); actualizarCarrito(); cargarProductos();
+    document.getElementById('codigo-busqueda').focus();
+}
+
+function pedirClaveAdmin() {
+    const claveIngresada = prompt("🔐 Ingrese la clave de Administrador:");
+    if (claveIngresada === CLAVE_ACCESO) {
+        abrirAdmin();
+    } else if (claveIngresada !== null) {
+        alert("❌ Clave incorrecta");
+    }
+}
+
+function pedirClaveCuadratura() {
+    const claveIngresada = prompt("🔐 Ingrese la clave de Cuadratura:");
+    if (claveIngresada === CLAVE_ACCESO) {
+        abrirCuadratura();
+    } else if (claveIngresada !== null) {
+        alert("❌ Clave incorrecta");
+    }
 }
 
 function abrirAdmin() { document.getElementById('modal-admin').style.display = 'flex'; cargarListaAdmin(); }
-function cerrarAdmin() { document.getElementById('modal-admin').style.display = 'none'; delete window.editandoId; }
+function cerrarAdmin() { document.getElementById('modal-admin').style.display = 'none'; delete window.editandoId; document.getElementById('codigo-busqueda').focus(); }
 function cargarListaAdmin() {
     const lista = document.getElementById('lista-productos-admin');
     lista.innerHTML = productos.map(p => `
@@ -589,7 +641,8 @@ function guardarProducto() {
 }
 
 function abrirCuadratura() { document.getElementById('modal-cuadratura').style.display = 'flex'; actualizarCuadratura(); }
-function cerrarCuadratura() { document.getElementById('modal-cuadratura').style.display = 'none'; }
+function cerrarCuadratura() { document.getElementById('modal-cuadratura').style.display = 'none'; document.getElementById('codigo-busqueda').focus(); }
+
 function actualizarCuadratura() {
     const efectivo = historialVentas.filter(v => v.metodo === 'efectivo').reduce((s, v) => s + v.total, 0);
     const debito = historialVentas.filter(v => v.metodo === 'debito').reduce((s, v) => s + v.total, 0);
@@ -603,6 +656,10 @@ function actualizarCuadratura() {
     document.getElementById('cant-debito').textContent = historialVentas.filter(v => v.metodo === 'debito').length + ' ventas';
     document.getElementById('cant-transferencia').textContent = historialVentas.filter(v => v.metodo === 'transferencia').length + ' ventas';
     document.getElementById('cantidad-ventas').textContent = historialVentas.length + ' ventas registradas';
+    
+    const ahora = new Date();
+    document.getElementById('texto-fecha-impresion').textContent = "📅 Fecha de Emisión: " + ahora.toLocaleString('es-CL');
+
     const lista = document.getElementById('lista-ventas');
     if (historialVentas.length === 0) { lista.innerHTML = '<div class="sin-ventas">No hay ventas registradas</div>'; }
     else {
@@ -615,6 +672,12 @@ function actualizarCuadratura() {
     }
     calcularDiferencia();
 }
+
+function imprimirCuadratura() {
+    actualizarCuadratura();
+    window.print();
+}
+
 function calcularDiferencia() {
     const efectivoSistema = historialVentas.filter(v => v.metodo === 'efectivo').reduce((s, v) => s + v.total, 0);
     const cajaFisica = parseFloat(document.getElementById('caja-fisica-input').value) || 0;
@@ -626,13 +689,14 @@ function calcularDiferencia() {
     else if (diferencia > 0) { el.textContent = `💰 Sobra: $${diferencia.toLocaleString('es-CL')}`; el.className = "diferencia positiva"; }
     else { el.textContent = `📉 Falta: $${Math.abs(diferencia).toLocaleString('es-CL')}`; el.className = "diferencia negativa"; }
 }
+
 function cerrarCaja() {
     if (!confirm("⚠️ ¿Borrar TODO el historial de ventas? No se puede deshacer.")) return;
     historialVentas = [];
     guardarVentasLS();
     document.getElementById('caja-fisica-input').value = '';
     actualizarCuadratura();
-    alert("✅ Caja cerrada y limpiada");
+    alert("✅ Caja cerrada y limpia");
 }
 </script>
 </body>
