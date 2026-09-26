@@ -48,8 +48,8 @@
         .btn-naranja:hover { background: #ea580c; }
         .btn-imprimir { background: #6366f1; color: white; }
         .btn-imprimir:hover { background: #4f46e5; }
-        .btn-oculto { opacity: 0.7; }
-        .btn-oculto:hover { opacity: 1; }
+        .btn-gris { background: #6b7280; color: white; }
+        .btn-gris:hover { background: #4b5563; }
 
         .contenedor { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .fila { display: flex; flex-wrap: wrap; gap: 20px; }
@@ -57,6 +57,7 @@
         .col-productos { flex: 1 1 400px; }
         .tarjeta { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px; }
         .tarjeta h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+        .subseccion { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ddd; }
 
         /* BUSCADOR */
         .input-buscar { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #d1d5db; border-radius: 8px; margin-bottom: 10px; }
@@ -76,22 +77,15 @@
         .total-grande { font-size: 32px; font-weight: bold; color: #1e40af; text-align: right; margin: 15px 0; }
         .fila-pago { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
         .fila-pago label { font-weight: bold; min-width: 120px; }
-        .fila-pago input { flex: 1; min-width: 150px; padding: 12px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 8px; transition: all 0.3s; }
+        .fila-pago input { flex: 1; min-width: 150px; padding: 12px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 8px; }
         #monto-recibido:enabled {
             animation: parpadeo 1s infinite;
             outline: none;
-            caret-color: #1e40af;
-        }
-        #monto-recibido:disabled {
-            background: #f3f4f6;
-            border-color: #d1d5db;
-            cursor: not-allowed;
-            animation: none;
         }
         @keyframes parpadeo {
-            0% { border-color: #3b82f6; box-shadow: 0 0 0 transparent; }
+            0% { border-color: #3b82f6; }
             50% { border-color: #1e40af; box-shadow: 0 0 10px #3b82f6; }
-            100% { border-color: #3b82f6; box-shadow: 0 0 0 transparent; }
+            100% { border-color: #3b82f6; }
         }
         .vuelto { font-size: 28px; font-weight: bold; color: #22c55e; text-align: right; margin-top: 10px; }
         .vuelto-oculto { opacity: 0.3; font-size: 16px; }
@@ -111,8 +105,9 @@
         .producto-stock { font-size: 12px; color: #6b7280; margin-top: 5px; }
         .etiqueta-kilo { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-        /* ADMIN */
-        .seccion-admin { display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; background: #fefefe; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px; }
+        /* SECCIONES */
+        .seccion-gestion { display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #d1fae5; background: #f0fdf4; border-radius: 12px; padding: 20px; }
+        .seccion-seguridad { display: none; margin-top: 20px; padding-top: 20px; border-top: 2px solid #fecaca; background: #fef2f2; border-radius: 12px; padding: 20px; }
         .fila-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
         .fila-form input, .fila-form select { flex: 1; min-width: 120px; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; }
         .fila-form button { white-space: nowrap; }
@@ -120,7 +115,9 @@
         .reporte-caja h3 { margin-bottom: 10px; color: #374151; }
         .reporte-linea { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb; }
         .reporte-total { font-size: 20px; font-weight: bold; color: #1e40af; margin-top: 10px; }
-        .aviso-admin { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; margin-bottom: 15px; font-size: 14px; color: #92400e; }
+        .aviso { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
+        .aviso-verde { background: #dcfce7; border-left: 4px solid #22c55e; color: #166534; }
+        .aviso-rojo { background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; }
 
         /* IMPRESIÓN */
         #ventana-impresion {
@@ -135,7 +132,6 @@
         .ticket-caja .divisor { border-bottom: 1px dashed #333; margin: 8px 0; }
         .ticket-caja .fila { display: flex; justify-content: space-between; }
         .ticket-caja .total-final { font-weight: bold; font-size: 18px; border-top: 2px solid #333; padding-top: 8px; margin-top: 5px; }
-        .ticket-caja .pie { text-align: center; font-size: 12px; margin-top: 20px; color: #555; }
         .botones-impresion { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
 
         @media print {
@@ -143,7 +139,6 @@
             #ventana-impresion, #ventana-impresion * { visibility: visible; }
             #ventana-impresion { position: absolute; inset: 0; background: white; }
             .botones-impresion { display: none !important; }
-            .ticket-caja { box-shadow: none; border: none; }
         }
 
         @media (max-width: 768px) {
@@ -174,7 +169,7 @@
     <button class="btn" style="float:right; background:none; color:inherit; border:none; font-weight:bold;" onclick="cerrarAviso()">✕</button>
 </div>
 
-<!-- BLOQUEO AL VENCER → AQUÍ ES DONDE TÚ PONES LA CLAVE -->
+<!-- BLOQUEO AL VENCER -->
 <div id="bloqueo-pantalla" style="display: none;">
     <h2>🔒 Período de prueba finalizado</h2>
     <p>Ingrese la clave de activación proporcionada por su proveedor.</p>
@@ -192,15 +187,15 @@
     </div>
 </div>
 
-<!-- APP PRINCIPAL → BOTÓN DESCARGAR ELIMINADO ✅ -->
+<!-- APP PRINCIPAL -->
 <div id="app">
     <div class="barra-superior">
-        <h1>🛒 Minimarket Pro-R.S-959732269 — POS</h1>
+        <h1>🛒 Minimarket Pro-R.S — POS</h1>
         <div>
-            <button class="btn btn-azul btn-oculto" onclick="mostrarAdmin()">⚙️ Admin</button>
+            <button class="btn btn-verde" onclick="mostrarGestion()">📦 Gestión</button>
             <button class="btn btn-naranja" onclick="cerrarCaja()">📊 Cerrar Caja</button>
             <button class="btn btn-imprimir" onclick="previsualizarCaja()">🖨️ Imprimir Caja</button>
-            <!-- ❌ BOTÓN DESCARGAR ELIMINADO -->
+            <button class="btn btn-gris" onclick="mostrarSeguridad()">🔒</button>
         </div>
     </div>
 
@@ -258,18 +253,18 @@
                 </div>
             </div>
 
-            <!-- PRODUCTOS Y ADMIN -->
+            <!-- PRODUCTOS Y SECCIONES -->
             <div class="col-productos">
                 <div class="tarjeta">
                     <h2>📦 Productos</h2>
                     <div class="grid-productos" id="grid-productos"></div>
                 </div>
 
-                <!-- SECCIÓN ADMIN -->
-                <div class="tarjeta seccion-admin" id="seccion-admin">
-                    <div class="aviso-admin">⚠️ ÁREA RESTRINGIDA — Solo para propietario</div>
-                    <h2>⚙️ Administración</h2>
-                   
+                <!-- GESTIÓN — EL CLIENTE VE ESTO -->
+                <div class="tarjeta seccion-gestion" id="seccion-gestion">
+                    <div class="aviso aviso-verde">✅ Área de Gestión — Agregue y administre sus productos</div>
+                    <h2>📦 Administrar Productos</h2>
+                    
                     <h3 style="margin:10px 0; font-size:15px;">Agregar Producto</h3>
                     <div class="fila-form">
                         <input type="text" id="prod-codigo" placeholder="Código de barras">
@@ -283,29 +278,44 @@
                             <option value="kilo">Por Kilo</option>
                         </select>
                     </div>
-                    <button class="btn btn-verde" onclick="agregarProducto()">➕ Agregar</button>
-                    <button class="btn btn-rojo" onclick="eliminarProductoSeleccionado()">🗑️ Eliminar</button>
-                   
-                    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
-                   
-                    <h3>🔐 Cambiar Claves</h3>
-                    <div class="fila-form">
-                        <input type="password" id="nueva-clave-acceso" placeholder="Nueva clave acceso">
-                        <input type="password" id="nueva-clave-admin" placeholder="Nueva clave admin">
-                    </div>
-                    <button class="btn btn-azul" onclick="guardarClaves()">💾 Guardar Claves</button>
+                    <button class="btn btn-verde" onclick="agregarProducto()">➕ Agregar Producto</button>
                     
-                    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+                    <div class="subseccion">
+                        <h3>Eliminar Producto</h3>
+                        <div class="fila-form">
+                            <input type="text" id="prod-eliminar-codigo" placeholder="Código del producto a eliminar">
+                        </div>
+                        <button class="btn btn-rojo" onclick="eliminarProductoSeleccionado()">🗑️ Eliminar</button>
+                    </div>
+                    
+                    <button class="btn btn-gris" style="margin-top:15px;" onclick="cerrarGestion()">Cerrar Gestión</button>
+                </div>
+
+                <!-- SEGURIDAD — SOLO TÚ LO VES 🔒 -->
+                <div class="tarjeta seccion-seguridad" id="seccion-seguridad">
+                    <div class="aviso aviso-rojo">🔒 SOLO PROPIETARIO — No comparta esta sección</div>
+                    <h2>🔒 Panel de Seguridad</h2>
+                    
+                    <h3>Claves del Sistema</h3>
+                    <div class="fila-form">
+                        <input type="password" id="nueva-clave-acceso" placeholder="Nueva clave de acceso (Venta)">
+                        <input type="password" id="nueva-clave-gestion" placeholder="Nueva clave de Gestión (Productos)">
+                    </div>
+                    <div class="fila-form">
+                        <input type="password" id="nueva-clave-maestra" placeholder="Nueva CLAVE MAESTRA (Solo TÚ)">
+                    </div>
+                    <button class="btn btn-azul" onclick="guardarClaves()">💾 Guardar Cambios</button>
+                    
+                    <hr style="margin:20px 0; border:none; border-top:1px solid #fecaca;">
                     
                     <h3>🔑 Clave de Activación</h3>
-                    <p style="font-size:13px; color:#666; margin:8px 0;">Escribe aquí la clave que le darás al cliente para activar su sistema permanentemente:</p>
+                    <p style="font-size:13px; color:#666; margin:8px 0;">Esta clave desbloquea el sistema permanentemente. Dásela al cliente cuando pague.</p>
                     <div class="fila-form">
-                        <input type="password" id="clave-activacion-personalizada" placeholder="Escribe la clave aquí...">
+                        <input type="password" id="clave-activacion-personalizada" placeholder="Defina la clave de activación...">
                     </div>
-                    <button class="btn btn-verde" onclick="guardarClaveActivacion()">✅ Guardar Clave de Activación</button>
-                    <p style="font-size:12px; color:#22c55e; margin-top:8px;">💡 Esta clave se guarda solo en este dispositivo y no se comparte con nadie.</p>
+                    <button class="btn btn-verde" onclick="guardarClaveActivacion()">✅ Establecer Clave</button>
                     
-                    <button class="btn btn-rojo" style="margin-top:10px;" onclick="cerrarAdmin()">🔒 Cerrar Administración</button>
+                    <button class="btn btn-gris" style="margin-top:15px;" onclick="cerrarSeguridad()">Cerrar Seguridad</button>
                 </div>
             </div>
         </div>
@@ -314,27 +324,18 @@
 
 <script>
 // ==================================================
-// CONFIGURACIÓN INICIAL
+// CONFIGURACIÓN — 3 CLAVES SEPARADAS ✅
 // ==================================================
-const CLAVE_ACCESO_DEFECTO = "1234";
-const CLAVE_ADMIN_DEFECTO = "admin123";
+const DEF_ACCESO = "1234"; // Entrar a vender
+const DEF_GESTION = "gestion123"; // Agregar productos
+const DEF_MAESTRA = "loreto1502"; // TÚ — control total
 const DIAS_PRUEBA = 30;
 
-let claveAcceso = localStorage.getItem('claveAcceso');
-if (!claveAcceso || claveAcceso === '' || claveAcceso === 'null') {
-    claveAcceso = CLAVE_ACCESO_DEFECTO;
-    localStorage.setItem('claveAcceso', claveAcceso);
-}
-
-let claveAdmin = localStorage.getItem('claveAdmin');
-if (!claveAdmin || claveAdmin === '' || claveAdmin === 'null') {
-    claveAdmin = CLAVE_ADMIN_DEFECTO;
-    localStorage.setItem('claveAdmin', claveAdmin);
-}
-
-// ⚠️ La clave de activación la pones TÚ desde la sección Admin
-let claveActivacion = localStorage.getItem('claveActivacion');
-// Por defecto NO hay clave fija → tú la creas por cada cliente
+// Cargar claves guardadas o usar por defecto
+let claveAcceso = localStorage.getItem('claveAcceso') || DEF_ACCESO;
+let claveGestion = localStorage.getItem('claveGestion') || DEF_GESTION;
+let claveMaestra = localStorage.getItem('claveMaestra') || DEF_MAESTRA;
+let claveActivacion = localStorage.getItem('claveActivacion') || '';
 
 let fechaInstalacion = localStorage.getItem('fechaInstalacion');
 if (!fechaInstalacion) {
@@ -343,7 +344,6 @@ if (!fechaInstalacion) {
 }
 const fechaVencimiento = new Date(fechaInstalacion);
 fechaVencimiento.setDate(fechaVencimiento.getDate() + DIAS_PRUEBA);
-
 let sistemaActivado = localStorage.getItem('sistemaActivado') === 'true';
 
 // PRODUCTOS INICIALES
@@ -362,10 +362,9 @@ let codigoEscanner = null;
 let productosSugeridos = [];
 
 // ==================================================
-// INICIO DEL SISTEMA
+// INICIO
 // ==================================================
 window.onload = function() {
-    document.getElementById('seccion-admin').style.display = 'none';
     const hoy = new Date();
     if (hoy > fechaVencimiento && !sistemaActivado) {
         document.getElementById('bloqueo-pantalla').style.display = 'flex';
@@ -376,6 +375,8 @@ window.onload = function() {
         document.getElementById('aviso-prueba').style.display = 'block';
         document.getElementById('fecha-vencimiento').textContent = `${fechaVencimiento.toLocaleDateString()} (${diasRestantes} días restantes)`;
     }
+    document.getElementById('seccion-gestion').style.display = 'none';
+    document.getElementById('seccion-seguridad').style.display = 'none';
 };
 
 function cerrarAviso() {
@@ -386,8 +387,8 @@ function cerrarAviso() {
 // INICIO DE SESIÓN
 // ==================================================
 function verificarClave() {
-    const claveIngresada = document.getElementById('clave-acceso').value;
-    if (claveIngresada === claveAcceso) {
+    const ingresada = document.getElementById('clave-acceso').value.trim();
+    if (ingresada === claveAcceso) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         renderizarProductos();
@@ -400,35 +401,85 @@ function verificarClave() {
 }
 
 // ==================================================
-// 🔑 ACTIVACIÓN — TÚ PONES LA CLAVE QUE QUIERAS
+// 🔑 ACTIVACIÓN
 // ==================================================
 function activarSistema() {
-    const claveIngresada = document.getElementById('clave-activacion').value.trim();
-    
-    // ✅ Compara con la clave que TÚ guardaste en Admin
-    if (claveActivado && claveIngresada === claveActivacion) {
+    const ingresada = document.getElementById('clave-activacion').value.trim();
+    if (claveActivacion && ingresada === claveActivacion) {
         sistemaActivado = true;
         localStorage.setItem('sistemaActivado', 'true');
         document.getElementById('bloqueo-pantalla').style.display = 'none';
-        document.getElementById('login-screen').style.display = 'flex';
         alert('✅ Sistema activado permanentemente. ¡Gracias!');
     } else {
-        alert('❌ Clave incorrecta. Verifique con su proveedor.');
+        alert('❌ Clave incorrecta. Contacte a su proveedor.');
     }
 }
 
 // ==================================================
-// 🔐 ADMINISTRACIÓN — GUARDAR CLAVE DE ACTIVACIÓN
+// 📦 GESTIÓN DE PRODUCTOS → CLIENTE ENTRA CON SU CLAVE
 // ==================================================
-function guardarClaveActivacion() {
-    const nuevaClave = document.getElementById('clave-activacion-personalizada').value.trim();
-    if (!nuevaClave) {
-        alert('Escriba una clave primero.');
-        return;
+function mostrarGestion() {
+    const clave = prompt('🔑 Ingrese clave de Gestión:');
+    if (clave === claveGestion) {
+        document.getElementById('seccion-gestion').style.display = 'block';
+        document.getElementById('seccion-seguridad').style.display = 'none';
+    } else {
+        alert('❌ Clave incorrecta');
     }
-    claveActivacion = nuevaClave;
+}
+
+function cerrarGestion() {
+    document.getElementById('seccion-gestion').style.display = 'none';
+}
+
+// ==================================================
+// 🔒 SEGURIDAD → SOLO TÚ CON LA CLAVE MAESTRA
+// ==================================================
+function mostrarSeguridad() {
+    const clave = prompt('🔒 CLAVE MAESTRA — Solo para propietario:');
+    if (clave === claveMaestra) {
+        document.getElementById('seccion-seguridad').style.display = 'block';
+        document.getElementById('seccion-gestion').style.display = 'none';
+    } else {
+        alert('❌ Acceso denegado — Esta sección es solo para el proveedor');
+    }
+}
+
+function cerrarSeguridad() {
+    document.getElementById('seccion-seguridad').style.display = 'none';
+}
+
+function guardarClaves() {
+    const nuevaAcceso = document.getElementById('nueva-clave-acceso').value.trim();
+    const nuevaGestion = document.getElementById('nueva-clave-gestion').value.trim();
+    const nuevaMaestra = document.getElementById('nueva-clave-maestra').value.trim();
+    
+    if (nuevaAcceso) {
+        claveAcceso = nuevaAcceso;
+        localStorage.setItem('claveAcceso', claveAcceso);
+    }
+    if (nuevaGestion) {
+        claveGestion = nuevaGestion;
+        localStorage.setItem('claveGestion', claveGestion);
+    }
+    if (nuevaMaestra) {
+        claveMaestra = nuevaMaestra;
+        localStorage.setItem('claveMaestra', claveMaestra);
+    }
+    
+    alert('✅ Claves actualizadas');
+    document.getElementById('nueva-clave-acceso').value = '';
+    document.getElementById('nueva-clave-gestion').value = '';
+    document.getElementById('nueva-clave-maestra').value = '';
+    cerrarSeguridad();
+}
+
+function guardarClaveActivacion() {
+    const nueva = document.getElementById('clave-activacion-personalizada').value.trim();
+    if (!nueva) { alert('Escriba una clave primero'); return; }
+    claveActivacion = nueva;
     localStorage.setItem('claveActivacion', claveActivacion);
-    alert('✅ Clave de activación guardada.\n\nDásela al cliente cuando pague:\n👉 ' + nuevaClave);
+    alert('✅ Clave de activación guardada:\n👉 ' + nueva + '\n\nDásela al cliente cuando pague.');
     document.getElementById('clave-activacion-personalizada').value = '';
 }
 
@@ -439,13 +490,15 @@ function buscarSugerencias(texto) {
     const sugerenciasDiv = document.getElementById('sugerencias');
     texto = texto.trim().toLowerCase();
     if (texto.length < 1) { sugerenciasDiv.style.display = 'none'; return; }
-    productosSugeridos = productos.filter(p => p.codigo.toLowerCase().includes(texto) || p.nombre.toLowerCase().includes(texto)).slice(0, 8);
+    productosSugeridos = productos.filter(p => 
+        p.codigo.toLowerCase().includes(texto) || p.nombre.toLowerCase().includes(texto)
+    ).slice(0, 8);
     if (productosSugeridos.length === 0) { sugerenciasDiv.style.display = 'none'; return; }
     sugerenciasDiv.innerHTML = '';
     productosSugeridos.forEach((prod) => {
         const item = document.createElement('div');
         item.className = 'sugerencia-item';
-        item.innerHTML = `<strong>${prod.nombre}</strong> — $${prod.precio.toLocaleString()} <small>(${prod.codigo})</small>`;
+        item.innerHTML = `<strong>${prod.nombre}</strong> — $${prod.precio.toLocaleString()}`;
         item.onclick = () => {
             const indice = productos.findIndex(p => p.codigo === prod.codigo);
             agregarProductoAVenta(indice);
@@ -458,12 +511,11 @@ function buscarSugerencias(texto) {
 }
 
 function seleccionarPrimero() {
-    const sugerenciasDiv = document.getElementById('sugerencias');
     if (productosSugeridos.length > 0) {
         const indice = productos.findIndex(p => p.codigo === productosSugeridos[0].codigo);
         agregarProductoAVenta(indice);
         document.getElementById('buscar-producto').value = '';
-        sugerenciasDiv.style.display = 'none';
+        document.getElementById('sugerencias').style.display = 'none';
     }
 }
 
@@ -487,7 +539,7 @@ function toggleEscaner() {
                 document.getElementById('buscar-producto').value = decodedText;
                 seleccionarPrimero();
             },
-            (error) => {}
+            () => {}
         ).catch(err => alert('No se pudo acceder a la cámara'));
         escannerActivo = true;
     } else {
@@ -499,14 +551,14 @@ function toggleEscaner() {
 }
 
 // ==================================================
-// PRODUCTOS Y VENTAS
+// PRODUCTOS
 // ==================================================
 function guardarProductos() { localStorage.setItem('productos', JSON.stringify(productos)); }
 
 function renderizarProductos() {
     const grid = document.getElementById('grid-productos');
     grid.innerHTML = '';
-    productos.forEach((prod, index) => {
+    productos.forEach((prod) => {
         const card = document.createElement('div');
         card.className = 'producto-card';
         card.innerHTML = `
@@ -515,14 +567,66 @@ function renderizarProductos() {
             <div class="producto-stock">Stock: ${prod.stock}</div>
             ${prod.tipo === 'kilo' ? '<span class="etiqueta-kilo">POR KILO</span>' : ''}
         `;
-        card.onclick = () => agregarProductoAVenta(index);
+        card.onclick = () => {
+            const indice = productos.findIndex(p => p.codigo === prod.codigo);
+            agregarProductoAVenta(indice);
+        };
         grid.appendChild(card);
     });
 }
 
+function agregarProducto() {
+    const codigo = document.getElementById('prod-codigo').value.trim();
+    const nombre = document.getElementById('prod-nombre').value.trim();
+    const precio = parseFloat(document.getElementById('prod-precio').value);
+    const stock = parseInt(document.getElementById('prod-stock').value) || 0;
+    const tipo = document.getElementById('prod-tipo').value;
+    
+    if (!codigo || !nombre || isNaN(precio) || precio <= 0) { 
+        alert('Complete todos los campos correctamente.'); 
+        return; 
+    }
+    if (productos.some(p => p.codigo === codigo)) { 
+        alert('⚠️ Este código ya existe.'); 
+        return; 
+    }
+    
+    productos.push({ codigo, nombre, precio, stock, tipo });
+    guardarProductos();
+    renderizarProductos();
+    
+    document.getElementById('prod-codigo').value = '';
+    document.getElementById('prod-nombre').value = '';
+    document.getElementById('prod-precio').value = '';
+    document.getElementById('prod-stock').value = '';
+    
+    alert('✅ Producto agregado exitosamente');
+}
+
+function eliminarProductoSeleccionado() {
+    const codigo = document.getElementById('prod-eliminar-codigo').value.trim();
+    if (!codigo) { alert('Escriba el código del producto'); return; }
+    
+    const indice = productos.findIndex(p => p.codigo === codigo);
+    if (indice === -1) { alert('Producto no encontrado'); return; }
+    
+    if (!confirm(`¿Eliminar "${productos[indice].nombre}"?`)) return;
+    
+    productos.splice(indice, 1);
+    guardarProductos();
+    renderizarProductos();
+    
+    document.getElementById('prod-eliminar-codigo').value = '';
+    alert('✅ Producto eliminado');
+}
+
 function agregarProductoAVenta(indice) {
     const prod = productos[indice];
-    if (prod.stock <= 0 && prod.tipo === 'unidad') { alert('⚠️ Sin stock disponible'); return; }
+    if (prod.stock <= 0 && prod.tipo === 'unidad') { 
+        alert('⚠️ Sin stock disponible'); 
+        return; 
+    }
+    
     let cantidad = 1;
     if (prod.tipo === 'kilo') {
         const peso = prompt(`Peso en kilos para ${prod.nombre}:`, "1");
@@ -530,8 +634,13 @@ function agregarProductoAVenta(indice) {
         cantidad = parseFloat(peso);
         if (isNaN(cantidad) || cantidad <= 0) return;
     }
+    
     const subtotal = prod.precio * cantidad;
-    ventaActual.push({ indice, codigo: prod.codigo, nombre: prod.nombre, precio: prod.precio, cantidad, subtotal, tipo: prod.tipo });
+    ventaActual.push({ 
+        indice, codigo: prod.codigo, nombre: prod.nombre, 
+        precio: prod.precio, cantidad, subtotal, tipo: prod.tipo 
+    });
+    
     if (prod.tipo === 'unidad') productos[indice].stock -= cantidad;
     actualizarListaVenta();
     guardarProductos();
@@ -561,14 +670,20 @@ function actualizarListaVenta() {
 
 function eliminarItemVenta(index) {
     const item = ventaActual[index];
-    if (item.tipo === 'unidad') { productos[item.indice].stock += item.cantidad; guardarProductos(); renderizarProductos(); }
+    if (item.tipo === 'unidad') { 
+        productos[item.indice].stock += item.cantidad; 
+        guardarProductos(); 
+        renderizarProductos(); 
+    }
     ventaActual.splice(index, 1);
     actualizarListaVenta();
 }
 
 function limpiarVenta() {
-    if (ventaActual.length > 0 && !confirm('¿Limpiar venta?')) return;
-    ventaActual.forEach(item => { if (item.tipo === 'unidad') productos[item.indice].stock += item.cantidad; });
+    if (ventaActual.length > 0 && !confirm('¿Limpiar la venta actual?')) return;
+    ventaActual.forEach(item => { 
+        if (item.tipo === 'unidad') productos[item.indice].stock += item.cantidad; 
+    });
     ventaActual = [];
     guardarProductos();
     renderizarProductos();
@@ -594,15 +709,12 @@ function seleccionarPago(elemento) {
     if (metodoPagoSeleccionado === 'efectivo') {
         montoInput.disabled = false;
         montoInput.value = '';
-        montoInput.placeholder = '0';
         vueltoFila.classList.remove('vuelto-oculto');
-        vueltoFila.style.display = 'block';
         infoTexto.textContent = '— Escriba el monto recibido';
         calcularVuelto();
     } else {
         montoInput.disabled = true;
         montoInput.value = totalVenta;
-        montoInput.placeholder = 'Auto';
         vueltoFila.classList.add('vuelto-oculto');
         vueltoFila.innerHTML = 'Vuelto: — (Pago exacto)';
         infoTexto.textContent = '— Monto = Total automático';
@@ -616,20 +728,16 @@ function calcularVuelto() {
         return;
     }
     const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
-    const vuelto = recibido - total;
-    document.getElementById('vuelto').textContent = (vuelto > 0 ? vuelto : 0).toLocaleString();
+    document.getElementById('vuelto').textContent = Math.max(0, recibido - total).toLocaleString();
 }
 
 function finalizarVenta() {
     const total = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
-    if (total === 0) { alert('Sin productos'); return; }
+    if (total === 0) { alert('No hay productos en la venta'); return; }
 
     if (metodoPagoSeleccionado === 'efectivo') {
         const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
-        if (recibido < total) {
-            alert('❌ Monto insuficiente');
-            return;
-        }
+        if (recibido < total) { alert('❌ El monto recibido es insuficiente'); return; }
     }
 
     caja[metodoPagoSeleccionado] += total;
@@ -640,8 +748,6 @@ function finalizarVenta() {
     if (metodoPagoSeleccionado === 'efectivo') {
         const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
         mensaje += `\nVuelto: $${(recibido - total).toLocaleString()}`;
-    } else {
-        mensaje += `\nPago: ${metodoPagoSeleccionado.toUpperCase()}`;
     }
     alert(mensaje);
 
@@ -654,13 +760,12 @@ function finalizarVenta() {
 }
 
 // ==================================================
-// IMPRESIÓN Y CAJA
+// CAJA E IMPRESIÓN
 // ==================================================
 function previsualizarCaja() {
     const totalCaja = caja.efectivo + caja.debito + caja.transferencia;
     const fechaHora = new Date().toLocaleString('es-CL', { dateStyle: 'full', timeStyle: 'short' });
-    const ticket = document.getElementById('contenido-ticket');
-    ticket.innerHTML = `
+    document.getElementById('contenido-ticket').innerHTML = `
         <div class="titulo">🛒 MINIMARKET PRO</div>
         <div style="text-align:center; font-size:12px; margin-bottom:10px;">Sistema de Ventas POS</div>
         <div class="divisor"></div>
@@ -672,7 +777,7 @@ function previsualizarCaja() {
         <div class="divisor"></div>
         <div class="fila total-final"><span>TOTAL CAJA:</span><span>$${totalCaja.toLocaleString()}</span></div>
         <div class="divisor"></div>
-        <div class="pie">FIRMA RESPONSABLE: ___________________<br><br>¡Gracias por su trabajo!</div>
+        <div class="pie" style="text-align:center; font-size:12px; margin-top:20px; color:#555;">FIRMA RESPONSABLE: ___________________<br><br>¡Gracias por su trabajo!</div>
     `;
     document.getElementById('ventana-impresion').style.display = 'flex';
 }
@@ -685,91 +790,16 @@ function actualizarCaja() {
     document.getElementById('caja-efectivo').textContent = '$' + caja.efectivo.toLocaleString();
     document.getElementById('caja-debito').textContent = '$' + caja.debito.toLocaleString();
     document.getElementById('caja-transferencia').textContent = '$' + caja.transferencia.toLocaleString();
-    const total = caja.efectivo + caja.debito + caja.transferencia;
-    document.getElementById('caja-total').textContent = '$' + total.toLocaleString();
+    document.getElementById('caja-total').textContent = '$' + (caja.efectivo + caja.debito + caja.transferencia).toLocaleString();
 }
 
 function cerrarCaja() {
-    const total = caja.efectivo + caja.debito + caja.transferencia;
-    if (!confirm(`📊 CIERRE DE CAJA — ${new Date().toLocaleDateString()}\n\n💵 Efectivo: $${caja.efectivo.toLocaleString()}\n💳 Débito: $${caja.debito.toLocaleString()}\n🔄 Transferencia: $${caja.transferencia.toLocaleString()}\n\n💰 TOTAL: $${total.toLocaleString()}\n\n¿Ver reporte e imprimir?`)) return;
-    previsualizarCaja();
-    setTimeout(() => {
-        if (confirm('¿Reiniciar caja ahora?')) {
-            caja = { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
-            localStorage.setItem('caja', JSON.stringify(caja));
-            actualizarCaja();
-            cerrarVentanaImpresion();
-            alert('✅ Caja cerrada y reiniciada.');
-        }
-    }, 500);
+    if (!confirm('¿Seguro de cerrar la caja? Se reiniciarán los montos del día.')) return;
+    caja = { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
+    localStorage.setItem('caja', JSON.stringify(caja));
+    actualizarCaja();
+    alert('✅ Caja cerrada y reiniciada');
 }
-
-// ==================================================
-// ADMINISTRACIÓN
-// ==================================================
-function mostrarAdmin() {
-    const claveIngresada = prompt('🔐 Clave de Administrador:');
-    if (claveIngresada === claveAdmin) {
-        document.getElementById('seccion-admin').style.display = 'block';
-        alert('✅ Acceso concedido — Área de Administración');
-    } else {
-        alert('❌ Acceso denegado — Clave incorrecta');
-        document.getElementById('seccion-admin').style.display = 'none';
-    }
-}
-
-function cerrarAdmin() {
-    document.getElementById('seccion-admin').style.display = 'none';
-    alert('🔒 Administración cerrada');
-}
-
-function agregarProducto() {
-    const codigo = document.getElementById('prod-codigo').value.trim();
-    const nombre = document.getElementById('prod-nombre').value.trim();
-    const precio = parseFloat(document.getElementById('prod-precio').value);
-    const stock = parseInt(document.getElementById('prod-stock').value) || 0;
-    const tipo = document.getElementById('prod-tipo').value;
-    if (!codigo || !nombre || isNaN(precio) || precio <= 0) { alert('Complete todos los campos.'); return; }
-    if (productos.some(p => p.codigo === codigo)) { alert('⚠️ Código ya existe.'); return; }
-    productos.push({ codigo, nombre, precio, stock, tipo });
-    guardarProductos();
-    renderizarProductos();
-    document.getElementById('prod-codigo').value = '';
-    document.getElementById('prod-nombre').value = '';
-    document.getElementById('prod-precio').value = '';
-    document.getElementById('prod-stock').value = '';
-    alert('✅ Producto agregado.');
-}
-
-function eliminarProductoSeleccionado() {
-    const codigo = prompt('Código del producto a eliminar:');
-    if (!codigo) return;
-    const indice = productos.findIndex(p => p.codigo === codigo);
-    if (indice === -1) { alert('No encontrado'); return; }
-    if (!confirm(`¿Eliminar "${productos[indice].nombre}"?`)) return;
-    productos.splice(indice, 1);
-    guardarProductos();
-    renderizarProductos();
-    alert('✅ Eliminado.');
-}
-
-function guardarClaves() {
-    const nuevaAcceso = document.getElementById('nueva-clave-acceso').value.trim();
-    const nuevaAdmin = document.getElementById('nueva-clave-admin').value.trim();
-    if (nuevaAcceso) {
-        claveAcceso = nuevaAcceso;
-        localStorage.setItem('claveAcceso', claveAcceso);
-    }
-    if (nuevaAdmin) {
-        claveAdmin = nuevaAdmin;
-        localStorage.setItem('claveAdmin', claveAdmin);
-    }
-    alert('✅ Claves actualizadas. ¡Recuerda anotarlas!');
-    document.getElementById('nueva-clave-acceso').value = '';
-    document.getElementById('nueva-clave-admin').value = '';
-    cerrarAdmin();
-}
-
 </script>
 </body>
 </html>
