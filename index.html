@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimarket Pro — POS CORREGIDO</title>
+    <title>Minimarket Pro — POS</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -72,19 +72,19 @@
         .tabla-venta th { background: #f9fafb; font-weight: bold; color: #374151; }
         .eliminar-item { color: #ef4444; cursor: pointer; font-weight: bold; }
 
-        /* PAGO — CURSOR PARPADEANDO SOLO EN EFECTIVO */
+        /* PAGO */
         .total-grande { font-size: 32px; font-weight: bold; color: #1e40af; text-align: right; margin: 15px 0; }
         .fila-pago { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
         .fila-pago label { font-weight: bold; min-width: 120px; }
         .fila-pago input { flex: 1; min-width: 150px; padding: 12px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 8px; transition: all 0.3s; }
-        #monto-recibido:enabled { 
-            animation: parpadeo 1s infinite; 
+        #monto-recibido:enabled {
+            animation: parpadeo 1s infinite;
             outline: none;
             caret-color: #1e40af;
         }
-        #monto-recibido:disabled { 
-            background: #f3f4f6; 
-            border-color: #d1d5db; 
+        #monto-recibido:disabled {
+            background: #f3f4f6;
+            border-color: #d1d5db;
             cursor: not-allowed;
             animation: none;
         }
@@ -111,7 +111,7 @@
         .producto-stock { font-size: 12px; color: #6b7280; margin-top: 5px; }
         .etiqueta-kilo { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-        /* ADMIN — OCULTO POR DEFECTO */
+        /* ADMIN */
         .seccion-admin { display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; background: #fefefe; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px; }
         .fila-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
         .fila-form input, .fila-form select { flex: 1; min-width: 120px; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; }
@@ -174,13 +174,13 @@
     <button class="btn" style="float:right; background:none; color:inherit; border:none; font-weight:bold;" onclick="cerrarAviso()">✕</button>
 </div>
 
-<!-- BLOQUEO -->
+<!-- BLOQUEO AL VENCER → AQUÍ ES DONDE TÚ PONES LA CLAVE -->
 <div id="bloqueo-pantalla" style="display: none;">
     <h2>🔒 Período de prueba finalizado</h2>
-    <p>Ingrese la clave de activación para continuar.</p>
-    <input type="password" id="clave-activacion" placeholder="Clave de activación">
-    <button onclick="activarSistema()">Activar Sistema</button>
-    <p style="margin-top:15px; font-size:13px; color:#aaa;">Clave: activar2026</p>
+    <p>Ingrese la clave de activación proporcionada por su proveedor.</p>
+    <input type="password" id="clave-activacion" placeholder="Escriba la clave aquí...">
+    <button onclick="activarSistema()">✅ Activar Sistema</button>
+    <p style="margin-top:15px; font-size:13px; color:#aaa;">Contactar al proveedor si no tiene su clave</p>
 </div>
 
 <!-- VENTANA IMPRESIÓN -->
@@ -192,15 +192,15 @@
     </div>
 </div>
 
-<!-- APP PRINCIPAL -->
+<!-- APP PRINCIPAL → BOTÓN DESCARGAR ELIMINADO ✅ -->
 <div id="app">
     <div class="barra-superior">
-        <h1>🛒 Minimarket Pro — POS</h1>
+        <h1>🛒 Minimarket Pro-R.S-959732269 — POS</h1>
         <div>
             <button class="btn btn-azul btn-oculto" onclick="mostrarAdmin()">⚙️ Admin</button>
             <button class="btn btn-naranja" onclick="cerrarCaja()">📊 Cerrar Caja</button>
             <button class="btn btn-imprimir" onclick="previsualizarCaja()">🖨️ Imprimir Caja</button>
-            <button class="btn btn-verde" onclick="descargarCodigo()">💾 Descargar</button>
+            <!-- ❌ BOTÓN DESCARGAR ELIMINADO -->
         </div>
     </div>
 
@@ -210,7 +210,6 @@
             <div class="col-venta">
                 <div class="tarjeta">
                     <h2>🛍️ Venta Actual</h2>
-                    
                     <input type="text" id="buscar-producto" class="input-buscar" placeholder="🔍 Buscar por nombre o código..." oninput="buscarSugerencias(this.value)" onkeypress="if(event.key==='Enter')seleccionarPrimero()">
                     <div id="sugerencias" class="sugerencias" style="display:none;"></div>
                     <button class="btn btn-azul btn-escanear" onclick="toggleEscaner()">📷 Escáner Código de Barras</button>
@@ -266,11 +265,11 @@
                     <div class="grid-productos" id="grid-productos"></div>
                 </div>
 
-                <!-- SECCIÓN ADMIN — OCULTA POR DEFECTO -->
+                <!-- SECCIÓN ADMIN -->
                 <div class="tarjeta seccion-admin" id="seccion-admin">
                     <div class="aviso-admin">⚠️ ÁREA RESTRINGIDA — Solo para propietario</div>
                     <h2>⚙️ Administración</h2>
-                    
+                   
                     <h3 style="margin:10px 0; font-size:15px;">Agregar Producto</h3>
                     <div class="fila-form">
                         <input type="text" id="prod-codigo" placeholder="Código de barras">
@@ -286,15 +285,26 @@
                     </div>
                     <button class="btn btn-verde" onclick="agregarProducto()">➕ Agregar</button>
                     <button class="btn btn-rojo" onclick="eliminarProductoSeleccionado()">🗑️ Eliminar</button>
-                    
+                   
                     <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
-                    
+                   
                     <h3>🔐 Cambiar Claves</h3>
                     <div class="fila-form">
                         <input type="password" id="nueva-clave-acceso" placeholder="Nueva clave acceso">
                         <input type="password" id="nueva-clave-admin" placeholder="Nueva clave admin">
                     </div>
                     <button class="btn btn-azul" onclick="guardarClaves()">💾 Guardar Claves</button>
+                    
+                    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+                    
+                    <h3>🔑 Clave de Activación</h3>
+                    <p style="font-size:13px; color:#666; margin:8px 0;">Escribe aquí la clave que le darás al cliente para activar su sistema permanentemente:</p>
+                    <div class="fila-form">
+                        <input type="password" id="clave-activacion-personalizada" placeholder="Escribe la clave aquí...">
+                    </div>
+                    <button class="btn btn-verde" onclick="guardarClaveActivacion()">✅ Guardar Clave de Activación</button>
+                    <p style="font-size:12px; color:#22c55e; margin-top:8px;">💡 Esta clave se guarda solo en este dispositivo y no se comparte con nadie.</p>
+                    
                     <button class="btn btn-rojo" style="margin-top:10px;" onclick="cerrarAdmin()">🔒 Cerrar Administración</button>
                 </div>
             </div>
@@ -304,11 +314,10 @@
 
 <script>
 // ==================================================
-// CONFIGURACIÓN — CLAVES
+// CONFIGURACIÓN INICIAL
 // ==================================================
 const CLAVE_ACCESO_DEFECTO = "1234";
 const CLAVE_ADMIN_DEFECTO = "admin123";
-const CLAVE_ACTIVACION_DEFECTO = "activar2026";
 const DIAS_PRUEBA = 30;
 
 let claveAcceso = localStorage.getItem('claveAcceso');
@@ -322,6 +331,10 @@ if (!claveAdmin || claveAdmin === '' || claveAdmin === 'null') {
     claveAdmin = CLAVE_ADMIN_DEFECTO;
     localStorage.setItem('claveAdmin', claveAdmin);
 }
+
+// ⚠️ La clave de activación la pones TÚ desde la sección Admin
+let claveActivacion = localStorage.getItem('claveActivacion');
+// Por defecto NO hay clave fija → tú la creas por cada cliente
 
 let fechaInstalacion = localStorage.getItem('fechaInstalacion');
 if (!fechaInstalacion) {
@@ -349,7 +362,7 @@ let codigoEscanner = null;
 let productosSugeridos = [];
 
 // ==================================================
-// INICIO
+// INICIO DEL SISTEMA
 // ==================================================
 window.onload = function() {
     document.getElementById('seccion-admin').style.display = 'none';
@@ -370,7 +383,7 @@ function cerrarAviso() {
 }
 
 // ==================================================
-// LOGIN
+// INICIO DE SESIÓN
 // ==================================================
 function verificarClave() {
     const claveIngresada = document.getElementById('clave-acceso').value;
@@ -386,20 +399,41 @@ function verificarClave() {
     }
 }
 
+// ==================================================
+// 🔑 ACTIVACIÓN — TÚ PONES LA CLAVE QUE QUIERAS
+// ==================================================
 function activarSistema() {
-    const clave = document.getElementById('clave-activacion').value;
-    if (clave === CLAVE_ACTIVACION_DEFECTO) {
+    const claveIngresada = document.getElementById('clave-activacion').value.trim();
+    
+    // ✅ Compara con la clave que TÚ guardaste en Admin
+    if (claveActivado && claveIngresada === claveActivacion) {
         sistemaActivado = true;
         localStorage.setItem('sistemaActivado', 'true');
         document.getElementById('bloqueo-pantalla').style.display = 'none';
         document.getElementById('login-screen').style.display = 'flex';
+        alert('✅ Sistema activado permanentemente. ¡Gracias!');
     } else {
-        alert('Clave incorrecta.');
+        alert('❌ Clave incorrecta. Verifique con su proveedor.');
     }
 }
 
 // ==================================================
-// 🔍 BÚSQUEDA
+// 🔐 ADMINISTRACIÓN — GUARDAR CLAVE DE ACTIVACIÓN
+// ==================================================
+function guardarClaveActivacion() {
+    const nuevaClave = document.getElementById('clave-activacion-personalizada').value.trim();
+    if (!nuevaClave) {
+        alert('Escriba una clave primero.');
+        return;
+    }
+    claveActivacion = nuevaClave;
+    localStorage.setItem('claveActivacion', claveActivacion);
+    alert('✅ Clave de activación guardada.\n\nDásela al cliente cuando pague:\n👉 ' + nuevaClave);
+    document.getElementById('clave-activacion-personalizada').value = '';
+}
+
+// ==================================================
+// BÚSQUEDA Y ESCÁNER
 // ==================================================
 function buscarSugerencias(texto) {
     const sugerenciasDiv = document.getElementById('sugerencias');
@@ -441,9 +475,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// ==================================================
-// ESCÁNER
-// ==================================================
 function toggleEscaner() {
     const reader = document.getElementById('reader');
     if (!escannerActivo) {
@@ -468,7 +499,7 @@ function toggleEscaner() {
 }
 
 // ==================================================
-// PRODUCTOS
+// PRODUCTOS Y VENTAS
 // ==================================================
 function guardarProductos() { localStorage.setItem('productos', JSON.stringify(productos)); }
 
@@ -548,7 +579,7 @@ function limpiarVenta() {
 }
 
 // ==================================================
-// 🔄 SELECCIÓN DE PAGO — CORREGIDO ✅
+// PAGOS
 // ==================================================
 function seleccionarPago(elemento) {
     document.querySelectorAll('.medio-pago').forEach(el => el.classList.remove('seleccionado'));
@@ -560,7 +591,6 @@ function seleccionarPago(elemento) {
     const infoTexto = document.getElementById('info-pago-texto');
     const totalVenta = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
 
-    // ✅ EFECTIVO → Escribir monto, calcular vuelto
     if (metodoPagoSeleccionado === 'efectivo') {
         montoInput.disabled = false;
         montoInput.value = '';
@@ -569,9 +599,7 @@ function seleccionarPago(elemento) {
         vueltoFila.style.display = 'block';
         infoTexto.textContent = '— Escriba el monto recibido';
         calcularVuelto();
-    }
-    // ✅ DÉBITO / TRANSFERENCIA → MONTO = TOTAL, SIN VUELTO
-    else {
+    } else {
         montoInput.disabled = true;
         montoInput.value = totalVenta;
         montoInput.placeholder = 'Auto';
@@ -581,31 +609,21 @@ function seleccionarPago(elemento) {
     }
 }
 
-// ==================================================
-// 💰 CÁLCULO DE VUELTO — CORREGIDO ✅
-// ==================================================
 function calcularVuelto() {
     const total = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
-    
-    // ⚡ Si NO es efectivo, NO se calcula vuelto
     if (metodoPagoSeleccionado !== 'efectivo') {
         document.getElementById('vuelto').textContent = '—';
         return;
     }
-    
     const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
     const vuelto = recibido - total;
     document.getElementById('vuelto').textContent = (vuelto > 0 ? vuelto : 0).toLocaleString();
 }
 
-// ==================================================
-// ✅ FINALIZAR VENTA — SIN ERROR EN DÉBITO ✅
-// ==================================================
 function finalizarVenta() {
     const total = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
     if (total === 0) { alert('Sin productos'); return; }
 
-    // ⚡ SOLO VALIDAR MONTO EN EFECTIVO
     if (metodoPagoSeleccionado === 'efectivo') {
         const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
         if (recibido < total) {
@@ -614,33 +632,29 @@ function finalizarVenta() {
         }
     }
 
-    // ✅ Registrar venta en caja
     caja[metodoPagoSeleccionado] += total;
     localStorage.setItem('caja', JSON.stringify(caja));
     actualizarCaja();
 
-    // Mensaje según método
     let mensaje = `✅ Venta finalizada!\nTotal: $${total.toLocaleString()}`;
     if (metodoPagoSeleccionado === 'efectivo') {
         const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
         mensaje += `\nVuelto: $${(recibido - total).toLocaleString()}`;
     } else {
-        mensaje += `\nPago: ${metodoPagoSeleccionado.toUpperCase()} — Monto exacto`;
+        mensaje += `\nPago: ${metodoPagoSeleccionado.toUpperCase()}`;
     }
     alert(mensaje);
 
-    // Limpiar venta
     ventaActual = [];
     actualizarListaVenta();
     document.getElementById('monto-recibido').value = '';
     document.getElementById('vuelto').textContent = '0';
-    // Volver a efectivo por defecto
     document.querySelector('.medio-pago').click();
     document.getElementById('buscar-producto').focus();
 }
 
 // ==================================================
-// 🖨️ IMPRESIÓN DE CAJA
+// IMPRESIÓN Y CAJA
 // ==================================================
 function previsualizarCaja() {
     const totalCaja = caja.efectivo + caja.debito + caja.transferencia;
@@ -667,9 +681,6 @@ function cerrarVentanaImpresion() {
     document.getElementById('ventana-impresion').style.display = 'none';
 }
 
-// ==================================================
-// CUADRATURA Y CIERRE DE CAJA
-// ==================================================
 function actualizarCaja() {
     document.getElementById('caja-efectivo').textContent = '$' + caja.efectivo.toLocaleString();
     document.getElementById('caja-debito').textContent = '$' + caja.debito.toLocaleString();
@@ -694,7 +705,7 @@ function cerrarCaja() {
 }
 
 // ==================================================
-// 🔒 ADMINISTRACIÓN
+// ADMINISTRACIÓN
 // ==================================================
 function mostrarAdmin() {
     const claveIngresada = prompt('🔐 Clave de Administrador:');
@@ -757,22 +768,6 @@ function guardarClaves() {
     document.getElementById('nueva-clave-acceso').value = '';
     document.getElementById('nueva-clave-admin').value = '';
     cerrarAdmin();
-}
-
-// ==================================================
-// DESCARGA
-// ==================================================
-function descargarCodigo() {
-    if (!confirm('¿Descargar como index.html?')) return;
-    const codigoCompleto = document.documentElement.outerHTML;
-    const blob = new Blob([codigoCompleto], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'index.html';
-    a.click();
-    URL.revokeObjectURL(url);
-    alert('✅ Descargado.');
 }
 
 </script>
