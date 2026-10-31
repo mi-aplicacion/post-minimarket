@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimarket Pro — POS</title>
+    <title>Minimarket Pro — POS PRO</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -16,7 +16,7 @@
         }
         .login-box { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center; }
         .login-box h2 { color: #1e40af; margin-bottom: 1.5rem; }
-        .login-box input { width: 100%; padding: 14px; font-size: 18px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
+        .login-box select, .login-box input { width: 100%; padding: 14px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 1rem; text-align: center; }
         .login-box button { width: 100%; padding: 14px; background: #1e40af; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .login-box button:hover { background: #1d4ed8; }
         .error-clave { color: red; margin-top: 10px; display: none; }
@@ -37,6 +37,7 @@
         #app { display: none; padding-top: 50px; }
         .barra-superior { background: #1e40af; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; flex-wrap: wrap; gap: 8px; }
         .barra-superior h1 { font-size: 18px; }
+        .badge-cajero { background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 13px; margin-left: 10px; }
         .btn { padding: 8px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; margin-left: 5px; }
         .btn-verde { background: #22c55e; color: white; }
         .btn-verde:hover { background: #16a34a; }
@@ -48,8 +49,8 @@
         .btn-naranja:hover { background: #ea580c; }
         .btn-imprimir { background: #6366f1; color: white; }
         .btn-imprimir:hover { background: #4f46e5; }
-        .btn-gris { background: #6b7280; color: white; }
-        .btn-gris:hover { background: #4b5563; }
+        .btn-amarillo { background: #f59e0b; color: white; }
+        .btn-amarillo:hover { background: #d97706; }
 
         .contenedor { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .fila { display: flex; flex-wrap: wrap; gap: 20px; }
@@ -57,7 +58,6 @@
         .col-productos { flex: 1 1 400px; }
         .tarjeta { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px; }
         .tarjeta h2 { font-size: 18px; margin-bottom: 15px; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
-        .subseccion { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ddd; }
 
         /* BUSCADOR */
         .input-buscar { width: 100%; padding: 12px; font-size: 16px; border: 2px solid #d1d5db; border-radius: 8px; margin-bottom: 10px; }
@@ -77,15 +77,22 @@
         .total-grande { font-size: 32px; font-weight: bold; color: #1e40af; text-align: right; margin: 15px 0; }
         .fila-pago { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 10px 0; }
         .fila-pago label { font-weight: bold; min-width: 120px; }
-        .fila-pago input { flex: 1; min-width: 150px; padding: 12px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 8px; }
+        .fila-pago input { flex: 1; min-width: 150px; padding: 12px; font-size: 18px; border: 2px solid #d1d5db; border-radius: 8px; transition: all 0.3s; }
         #monto-recibido:enabled {
             animation: parpadeo 1s infinite;
             outline: none;
+            caret-color: #1e40af;
+        }
+        #monto-recibido:disabled {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            cursor: not-allowed;
+            animation: none;
         }
         @keyframes parpadeo {
-            0% { border-color: #3b82f6; }
+            0% { border-color: #3b82f6; box-shadow: 0 0 0 transparent; }
             50% { border-color: #1e40af; box-shadow: 0 0 10px #3b82f6; }
-            100% { border-color: #3b82f6; }
+            100% { border-color: #3b82f6; box-shadow: 0 0 0 transparent; }
         }
         .vuelto { font-size: 28px; font-weight: bold; color: #22c55e; text-align: right; margin-top: 10px; }
         .vuelto-oculto { opacity: 0.3; font-size: 16px; }
@@ -105,19 +112,20 @@
         .producto-stock { font-size: 12px; color: #6b7280; margin-top: 5px; }
         .etiqueta-kilo { background: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
 
-        /* SECCIONES */
-        .seccion-gestion { display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #d1fae5; background: #f0fdf4; border-radius: 12px; padding: 20px; }
-        .seccion-seguridad { display: none; margin-top: 20px; padding-top: 20px; border-top: 2px solid #fecaca; background: #fef2f2; border-radius: 12px; padding: 20px; }
+        /* MÓDULOS OCULTOS */
+        .seccion-gestion, .seccion-admin { display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; background: #fefefe; border: 2px dashed #3b82f6; border-radius: 12px; padding: 20px; }
         .fila-form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
         .fila-form input, .fila-form select { flex: 1; min-width: 120px; padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; }
-        .fila-form button { white-space: nowrap; }
         .reporte-caja { margin-top: 20px; padding: 15px; background: #f9fafb; border-radius: 8px; }
         .reporte-caja h3 { margin-bottom: 10px; color: #374151; }
         .reporte-linea { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #e5e7eb; }
         .reporte-total { font-size: 20px; font-weight: bold; color: #1e40af; margin-top: 10px; }
-        .aviso { padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; }
-        .aviso-verde { background: #dcfce7; border-left: 4px solid #22c55e; color: #166534; }
-        .aviso-rojo { background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .aviso-admin { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 10px; margin-bottom: 15px; font-size: 14px; color: #92400e; }
+
+        /* TABLA HISTORIAL DE VENTAS */
+        .tabla-historial { width: 100%; border-collapse: collapse; font-size: 13px; max-height: 250px; display: block; overflow-y: auto; margin-top: 10px; }
+        .tabla-historial th, .tabla-historial td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        .tabla-historial th { background: #1e40af; color: white; position: sticky; top: 0; }
 
         /* IMPRESIÓN */
         #ventana-impresion {
@@ -132,6 +140,7 @@
         .ticket-caja .divisor { border-bottom: 1px dashed #333; margin: 8px 0; }
         .ticket-caja .fila { display: flex; justify-content: space-between; }
         .ticket-caja .total-final { font-weight: bold; font-size: 18px; border-top: 2px solid #333; padding-top: 8px; margin-top: 5px; }
+        .ticket-caja .pie { text-align: center; font-size: 12px; margin-top: 20px; color: #555; }
         .botones-impresion { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
 
         @media print {
@@ -139,6 +148,7 @@
             #ventana-impresion, #ventana-impresion * { visibility: visible; }
             #ventana-impresion { position: absolute; inset: 0; background: white; }
             .botones-impresion { display: none !important; }
+            .ticket-caja { box-shadow: none; border: none; }
         }
 
         @media (max-width: 768px) {
@@ -156,10 +166,11 @@
 <div id="login-screen">
     <div class="login-box">
         <h2>🔐 Acceso al Sistema</h2>
+        <div style="margin-bottom: 10px; text-align: left; font-size: 14px; font-weight: bold; color: #374151;">Seleccione Cajero:</div>
+        <select id="select-cajero-login"></select>
         <input type="password" id="clave-acceso" placeholder="Ingrese clave de acceso">
         <button onclick="verificarClave()">Ingresar</button>
         <p class="error-clave" id="msg-error">Clave incorrecta. Intente nuevamente.</p>
-        <p style="margin-top:15px; font-size:13px; color:#666;">Clave por defecto: 1234</p>
     </div>
 </div>
 
@@ -169,13 +180,12 @@
     <button class="btn" style="float:right; background:none; color:inherit; border:none; font-weight:bold;" onclick="cerrarAviso()">✕</button>
 </div>
 
-<!-- BLOQUEO AL VENCER -->
+<!-- BLOQUEO -->
 <div id="bloqueo-pantalla" style="display: none;">
     <h2>🔒 Período de prueba finalizado</h2>
-    <p>Ingrese la clave de activación proporcionada por su proveedor.</p>
-    <input type="password" id="clave-activacion" placeholder="Escriba la clave aquí...">
-    <button onclick="activarSistema()">✅ Activar Sistema</button>
-    <p style="margin-top:15px; font-size:13px; color:#aaa;">Contactar al proveedor si no tiene su clave</p>
+    <p>Ingrese la clave de activación para continuar.</p>
+    <input type="password" id="clave-activacion" placeholder="Clave de activación">
+    <button onclick="activarSistema()">Activar Sistema</button>
 </div>
 
 <!-- VENTANA IMPRESIÓN -->
@@ -190,12 +200,12 @@
 <!-- APP PRINCIPAL -->
 <div id="app">
     <div class="barra-superior">
-        <h1>🛒 Minimarket Pro-R.S — POS</h1>
+        <h1>🛒 Minimarket Pro-R.S — POS PRO <span class="badge-cajero" id="badge-cajero-actual">👤 Cajero: </span></h1>
         <div>
-            <button class="btn btn-verde" onclick="mostrarGestion()">📦 Gestión</button>
+            <button class="btn btn-verde" onclick="abrirGestion()">⚙️ Gestión</button>
             <button class="btn btn-naranja" onclick="cerrarCaja()">📊 Cerrar Caja</button>
             <button class="btn btn-imprimir" onclick="previsualizarCaja()">🖨️ Imprimir Caja</button>
-            <button class="btn btn-gris" onclick="mostrarSeguridad()">🔒</button>
+            <button class="btn btn-amarillo" onclick="mostrarAdmin()">🔒</button>
         </div>
     </div>
 
@@ -205,6 +215,7 @@
             <div class="col-venta">
                 <div class="tarjeta">
                     <h2>🛍️ Venta Actual</h2>
+                    
                     <input type="text" id="buscar-producto" class="input-buscar" placeholder="🔍 Buscar por nombre o código..." oninput="buscarSugerencias(this.value)" onkeypress="if(event.key==='Enter')seleccionarPrimero()">
                     <div id="sugerencias" class="sugerencias" style="display:none;"></div>
                     <button class="btn btn-azul btn-escanear" onclick="toggleEscaner()">📷 Escáner Código de Barras</button>
@@ -253,19 +264,18 @@
                 </div>
             </div>
 
-            <!-- PRODUCTOS Y SECCIONES -->
+            <!-- PRODUCTOS Y MÓDULOS -->
             <div class="col-productos">
                 <div class="tarjeta">
                     <h2>📦 Productos</h2>
                     <div class="grid-productos" id="grid-productos"></div>
                 </div>
 
-                <!-- GESTIÓN — EL CLIENTE VE ESTO -->
+                <!-- MÓDULO DE GESTIÓN -->
                 <div class="tarjeta seccion-gestion" id="seccion-gestion">
-                    <div class="aviso aviso-verde">✅ Área de Gestión — Agregue y administre sus productos</div>
-                    <h2>📦 Administrar Productos</h2>
+                    <h2>⚙️ Módulo de Gestión</h2>
                     
-                    <h3 style="margin:10px 0; font-size:15px;">Agregar Producto</h3>
+                    <h3 style="margin:10px 0; font-size:15px;">Agregar o Modificar Producto</h3>
                     <div class="fila-form">
                         <input type="text" id="prod-codigo" placeholder="Código de barras">
                         <input type="text" id="prod-nombre" placeholder="Nombre producto">
@@ -278,44 +288,86 @@
                             <option value="kilo">Por Kilo</option>
                         </select>
                     </div>
-                    <button class="btn btn-verde" onclick="agregarProducto()">➕ Agregar Producto</button>
-                    
-                    <div class="subseccion">
-                        <h3>Eliminar Producto</h3>
-                        <div class="fila-form">
-                            <input type="text" id="prod-eliminar-codigo" placeholder="Código del producto a eliminar">
-                        </div>
-                        <button class="btn btn-rojo" onclick="eliminarProductoSeleccionado()">🗑️ Eliminar</button>
-                    </div>
-                    
-                    <button class="btn btn-gris" style="margin-top:15px;" onclick="cerrarGestion()">Cerrar Gestión</button>
+                    <button class="btn btn-verde" onclick="agregarProducto()">➕ Guardar / Agregar Producto</button>
+                    <button class="btn btn-rojo" onclick="eliminarProductoSeleccionado()">🗑️ Eliminar Producto</button>
+
+                    <hr style="margin:20px 0; border:none; border-top:1px solid #ddd;">
+
+                    <h3 style="margin:10px 0; font-size:15px; color:#1e40af;">👁️ Revisión de Ventas del Día</h3>
+                    <table class="tabla-historial">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Cajero</th>
+                                <th>Detalle</th>
+                                <th>Pago</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-historial-gestion">
+                            <tr><td colspan="5" style="text-align:center; color:#777;">No hay ventas registradas hoy.</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-rojo" style="margin-top:8px; width:100%; font-size:12px;" onclick="pedirClaveBorrarHistorial()">🗑️ Borrar Historial (Requiere Clave)</button>
+
+                    <button class="btn btn-rojo" style="margin-top:15px; width:100%;" onclick="cerrarGestion()">🔒 Cerrar Gestión</button>
                 </div>
 
-                <!-- SEGURIDAD — SOLO TÚ LO VES 🔒 -->
-                <div class="tarjeta seccion-seguridad" id="seccion-seguridad">
-                    <div class="aviso aviso-rojo">🔒 SOLO PROPIETARIO — No comparta esta sección</div>
-                    <h2>🔒 Panel de Seguridad</h2>
+                <!-- MÓDULO DE ADMINISTRADOR AVANZADO -->
+                <div class="tarjeta seccion-admin" id="seccion-admin">
+                    <div class="aviso-admin">⚠️ ÁREA RESTRINGIDA — Panel de Propietario</div>
+                    <h2>🔐 Panel Administrador & Cajeros</h2>
                     
-                    <h3>Claves del Sistema</h3>
+                    <h3 style="margin:15px 0 10px 0; font-size:15px; color:#1e40af;">👥 Gestión de Cajeros (2 o 3 activos)</h3>
                     <div class="fila-form">
-                        <input type="password" id="nueva-clave-acceso" placeholder="Nueva clave de acceso (Venta)">
-                        <input type="password" id="nueva-clave-gestion" placeholder="Nueva clave de Gestión (Productos)">
+                        <input type="text" id="nuevo-cajero-nombre" placeholder="Nombre del cajero (Ej: Juan)">
+                        <button class="btn btn-verde" onclick="agregarCajero()">➕ Agregar Cajero</button>
                     </div>
+                    <table class="tabla-historial" style="max-height: 120px;">
+                        <thead>
+                            <tr>
+                                <th>Cajero Registrado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-cajeros-admin"></tbody>
+                    </table>
+
+                    <hr style="margin:20px 0; border:none; border-top:1px solid #ddd;">
+
+                    <h3 style="margin:15px 0 10px 0; font-size:15px; color:#1e40af;">📋 Historial de Ventas General</h3>
+                    <table class="tabla-historial">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Cajero</th>
+                                <th>Detalle</th>
+                                <th>Pago</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-historial-admin">
+                            <tr><td colspan="5" style="text-align:center; color:#777;">No hay ventas registradas hoy.</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-rojo" style="margin-top:8px; width:100%; font-size:12px;" onclick="limpiarHistorialVentas()">🗑️ Borrar Historial de Ventas</button>
+
+                    <hr style="margin:20px 0; border:none; border-top:1px solid #ddd;">
+
+                    <h3 style="margin:10px 0; font-size:14px;">🔑 Cambiar Claves del Sistema</h3>
                     <div class="fila-form">
-                        <input type="password" id="nueva-clave-maestra" placeholder="Nueva CLAVE MAESTRA (Solo TÚ)">
+                        <input type="password" id="nueva-clave-acceso" placeholder="Nueva clave venta">
+                        <input type="password" id="nueva-clave-admin" placeholder="Nueva clave Admin">
                     </div>
-                    <button class="btn btn-azul" onclick="guardarClaves()">💾 Guardar Cambios</button>
+                    <button class="btn btn-azul" onclick="guardarClaves()">💾 Guardar Claves</button>
+
+                    <hr style="margin:15px 0; border:none; border-top:1px solid #ddd;">
+
+                    <h3 style="margin:10px 0; font-size:14px;">📊 Control de Caja y Licencia</h3>
+                    <button class="btn btn-naranja" style="width:100%; margin-bottom:8px;" onclick="reiniciarCajaAdmin()">🔄 Forzar Reinicio de Caja a $0</button>
+                    <button class="btn btn-verde" style="width:100%; margin-bottom:8px;" onclick="activarSistemaPermanente()">⭐ Activar Sistema Permanentemente</button>
                     
-                    <hr style="margin:20px 0; border:none; border-top:1px solid #fecaca;">
-                    
-                    <h3>🔑 Clave de Activación</h3>
-                    <p style="font-size:13px; color:#666; margin:8px 0;">Esta clave desbloquea el sistema permanentemente. Dásela al cliente cuando pague.</p>
-                    <div class="fila-form">
-                        <input type="password" id="clave-activacion-personalizada" placeholder="Defina la clave de activación...">
-                    </div>
-                    <button class="btn btn-verde" onclick="guardarClaveActivacion()">✅ Establecer Clave</button>
-                    
-                    <button class="btn btn-gris" style="margin-top:15px;" onclick="cerrarSeguridad()">Cerrar Seguridad</button>
+                    <button class="btn btn-rojo" style="margin-top:10px; width:100%;" onclick="cerrarAdmin()">🔒 Cerrar Panel Administrador</button>
                 </div>
             </div>
         </div>
@@ -324,18 +376,27 @@
 
 <script>
 // ==================================================
-// CONFIGURACIÓN — 3 CLAVES SEPARADAS ✅
+// CONFIGURACIÓN — CLAVES, CAJEROS Y PRUEBA
 // ==================================================
-const DEF_ACCESO = "1234"; // Entrar a vender
-const DEF_GESTION = "gestion123"; // Agregar productos
-const DEF_MAESTRA = "loreto1502"; // TÚ — control total
+const CLAVE_ACCESO_DEFECTO = "1234";
+const CLAVE_ADMIN_DEFECTO = "admin123";
+const CLAVE_ACTIVACION_DEFECTO = "activar2026";
 const DIAS_PRUEBA = 30;
 
-// Cargar claves guardadas o usar por defecto
-let claveAcceso = localStorage.getItem('claveAcceso') || DEF_ACCESO;
-let claveGestion = localStorage.getItem('claveGestion') || DEF_GESTION;
-let claveMaestra = localStorage.getItem('claveMaestra') || DEF_MAESTRA;
-let claveActivacion = localStorage.getItem('claveActivacion') || '';
+let claveAcceso = localStorage.getItem('claveAcceso') || CLAVE_ACCESO_DEFECTO;
+localStorage.setItem('claveAcceso', claveAcceso);
+
+let claveAdmin = localStorage.getItem('claveAdmin') || CLAVE_ADMIN_DEFECTO;
+localStorage.setItem('claveAdmin', claveAdmin);
+
+let claveActivacion = localStorage.getItem('claveActivacion') || CLAVE_ACTIVACION_DEFECTO;
+localStorage.setItem('claveActivacion', claveActivacion);
+
+// Cajeros iniciales (puedes tener 2, 3 o los que quieras)
+let cajeros = JSON.parse(localStorage.getItem('cajeros')) || ["Cajero 1 (Ramón)", "Cajero 2", "Cajero 3"];
+localStorage.setItem('cajeros', JSON.stringify(cajeros));
+
+let cajeroActual = "";
 
 let fechaInstalacion = localStorage.getItem('fechaInstalacion');
 if (!fechaInstalacion) {
@@ -344,6 +405,7 @@ if (!fechaInstalacion) {
 }
 const fechaVencimiento = new Date(fechaInstalacion);
 fechaVencimiento.setDate(fechaVencimiento.getDate() + DIAS_PRUEBA);
+
 let sistemaActivado = localStorage.getItem('sistemaActivado') === 'true';
 
 // PRODUCTOS INICIALES
@@ -356,15 +418,29 @@ let productos = JSON.parse(localStorage.getItem('productos')) || [
 
 let ventaActual = [];
 let caja = JSON.parse(localStorage.getItem('caja')) || { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
+let historialVentas = JSON.parse(localStorage.getItem('historialVentas')) || [];
 let metodoPagoSeleccionado = 'efectivo';
 let escannerActivo = false;
 let codigoEscanner = null;
 let productosSugeridos = [];
 
 // ==================================================
-// INICIO
+// INICIO Y SELECTOR DE CAJERO
 // ==================================================
 window.onload = function() {
+    document.getElementById('seccion-gestion').style.display = 'none';
+    document.getElementById('seccion-admin').style.display = 'none';
+    
+    // Cargar select de cajeros en login
+    const selectLogin = document.getElementById('select-cajero-login');
+    selectLogin.innerHTML = '';
+    cajeros.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        selectLogin.appendChild(opt);
+    });
+
     const hoy = new Date();
     if (hoy > fechaVencimiento && !sistemaActivado) {
         document.getElementById('bloqueo-pantalla').style.display = 'flex';
@@ -375,8 +451,6 @@ window.onload = function() {
         document.getElementById('aviso-prueba').style.display = 'block';
         document.getElementById('fecha-vencimiento').textContent = `${fechaVencimiento.toLocaleDateString()} (${diasRestantes} días restantes)`;
     }
-    document.getElementById('seccion-gestion').style.display = 'none';
-    document.getElementById('seccion-seguridad').style.display = 'none';
 };
 
 function cerrarAviso() {
@@ -384,11 +458,13 @@ function cerrarAviso() {
 }
 
 // ==================================================
-// INICIO DE SESIÓN
+// LOGIN Y ACTIVACIÓN
 // ==================================================
 function verificarClave() {
-    const ingresada = document.getElementById('clave-acceso').value.trim();
-    if (ingresada === claveAcceso) {
+    const claveIngresada = document.getElementById('clave-acceso').value;
+    if (claveIngresada === claveAcceso || claveIngresada === claveAdmin) {
+        cajeroActual = document.getElementById('select-cajero-login').value;
+        document.getElementById('badge-cajero-actual').textContent = `👤 Cajero: ${cajeroActual}`;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         renderizarProductos();
@@ -400,105 +476,33 @@ function verificarClave() {
     }
 }
 
-// ==================================================
-// 🔑 ACTIVACIÓN
-// ==================================================
 function activarSistema() {
-    const ingresada = document.getElementById('clave-activacion').value.trim();
-    if (claveActivacion && ingresada === claveActivacion) {
+    const clave = document.getElementById('clave-activacion').value;
+    if (clave === claveActivacion) {
         sistemaActivado = true;
         localStorage.setItem('sistemaActivado', 'true');
         document.getElementById('bloqueo-pantalla').style.display = 'none';
-        alert('✅ Sistema activado permanentemente. ¡Gracias!');
+        document.getElementById('login-screen').style.display = 'flex';
+        alert('✅ Sistema activado con éxito.');
     } else {
-        alert('❌ Clave incorrecta. Contacte a su proveedor.');
+        alert('❌ Clave de activación incorrecta.');
     }
 }
 
 // ==================================================
-// 📦 GESTIÓN DE PRODUCTOS → CLIENTE ENTRA CON SU CLAVE
-// ==================================================
-function mostrarGestion() {
-    const clave = prompt('🔑 Ingrese clave de Gestión:');
-    if (clave === claveGestion) {
-        document.getElementById('seccion-gestion').style.display = 'block';
-        document.getElementById('seccion-seguridad').style.display = 'none';
-    } else {
-        alert('❌ Clave incorrecta');
-    }
-}
-
-function cerrarGestion() {
-    document.getElementById('seccion-gestion').style.display = 'none';
-}
-
-// ==================================================
-// 🔒 SEGURIDAD → SOLO TÚ CON LA CLAVE MAESTRA
-// ==================================================
-function mostrarSeguridad() {
-    const clave = prompt('🔒 CLAVE MAESTRA — Solo para propietario:');
-    if (clave === claveMaestra) {
-        document.getElementById('seccion-seguridad').style.display = 'block';
-        document.getElementById('seccion-gestion').style.display = 'none';
-    } else {
-        alert('❌ Acceso denegado — Esta sección es solo para el proveedor');
-    }
-}
-
-function cerrarSeguridad() {
-    document.getElementById('seccion-seguridad').style.display = 'none';
-}
-
-function guardarClaves() {
-    const nuevaAcceso = document.getElementById('nueva-clave-acceso').value.trim();
-    const nuevaGestion = document.getElementById('nueva-clave-gestion').value.trim();
-    const nuevaMaestra = document.getElementById('nueva-clave-maestra').value.trim();
-    
-    if (nuevaAcceso) {
-        claveAcceso = nuevaAcceso;
-        localStorage.setItem('claveAcceso', claveAcceso);
-    }
-    if (nuevaGestion) {
-        claveGestion = nuevaGestion;
-        localStorage.setItem('claveGestion', claveGestion);
-    }
-    if (nuevaMaestra) {
-        claveMaestra = nuevaMaestra;
-        localStorage.setItem('claveMaestra', claveMaestra);
-    }
-    
-    alert('✅ Claves actualizadas');
-    document.getElementById('nueva-clave-acceso').value = '';
-    document.getElementById('nueva-clave-gestion').value = '';
-    document.getElementById('nueva-clave-maestra').value = '';
-    cerrarSeguridad();
-}
-
-function guardarClaveActivacion() {
-    const nueva = document.getElementById('clave-activacion-personalizada').value.trim();
-    if (!nueva) { alert('Escriba una clave primero'); return; }
-    claveActivacion = nueva;
-    localStorage.setItem('claveActivacion', claveActivacion);
-    alert('✅ Clave de activación guardada:\n👉 ' + nueva + '\n\nDásela al cliente cuando pague.');
-    document.getElementById('clave-activacion-personalizada').value = '';
-}
-
-// ==================================================
-// BÚSQUEDA Y ESCÁNER
+// 🔍 BÚSQUEDA Y ESCÁNER
 // ==================================================
 function buscarSugerencias(texto) {
     const sugerenciasDiv = document.getElementById('sugerencias');
     texto = texto.trim().toLowerCase();
     if (texto.length < 1) { sugerenciasDiv.style.display = 'none'; return; }
-    productosSugeridos = productos.filter(p => 
-        p.codigo.toLowerCase().includes(texto) || p.nombre.toLowerCase().includes(texto)
-    ).slice(0, 8);
+    productosSugeridos = productos.filter(p => p.codigo.toLowerCase().includes(texto) || p.nombre.toLowerCase().includes(texto)).slice(0, 8);
     if (productosSugeridos.length === 0) { sugerenciasDiv.style.display = 'none'; return; }
     sugerenciasDiv.innerHTML = '';
     productosSugeridos.forEach((prod) => {
         const item = document.createElement('div');
         item.className = 'sugerencia-item';
-        item.innerHTML = `<strong>${prod.nombre}</strong> — $${prod.precio.toLocaleString()}`;
+        item.innerHTML = `<strong>${prod.nombre}</strong> — $${prod.precio.toLocaleString()} <small>(${prod.codigo})</small>`;
         item.onclick = () => {
             const indice = productos.findIndex(p => p.codigo === prod.codigo);
             agregarProductoAVenta(indice);
@@ -511,11 +515,12 @@ function buscarSugerencias(texto) {
 }
 
 function seleccionarPrimero() {
+    const sugerenciasDiv = document.getElementById('sugerencias');
     if (productosSugeridos.length > 0) {
         const indice = productos.findIndex(p => p.codigo === productosSugeridos[0].codigo);
         agregarProductoAVenta(indice);
         document.getElementById('buscar-producto').value = '';
-        document.getElementById('sugerencias').style.display = 'none';
+        sugerenciasDiv.style.display = 'none';
     }
 }
 
@@ -539,7 +544,7 @@ function toggleEscaner() {
                 document.getElementById('buscar-producto').value = decodedText;
                 seleccionarPrimero();
             },
-            () => {}
+            (error) => {}
         ).catch(err => alert('No se pudo acceder a la cámara'));
         escannerActivo = true;
     } else {
@@ -551,14 +556,14 @@ function toggleEscaner() {
 }
 
 // ==================================================
-// PRODUCTOS
+// PRODUCTOS Y VENTAS
 // ==================================================
 function guardarProductos() { localStorage.setItem('productos', JSON.stringify(productos)); }
 
 function renderizarProductos() {
     const grid = document.getElementById('grid-productos');
     grid.innerHTML = '';
-    productos.forEach((prod) => {
+    productos.forEach((prod, index) => {
         const card = document.createElement('div');
         card.className = 'producto-card';
         card.innerHTML = `
@@ -567,66 +572,14 @@ function renderizarProductos() {
             <div class="producto-stock">Stock: ${prod.stock}</div>
             ${prod.tipo === 'kilo' ? '<span class="etiqueta-kilo">POR KILO</span>' : ''}
         `;
-        card.onclick = () => {
-            const indice = productos.findIndex(p => p.codigo === prod.codigo);
-            agregarProductoAVenta(indice);
-        };
+        card.onclick = () => agregarProductoAVenta(index);
         grid.appendChild(card);
     });
 }
 
-function agregarProducto() {
-    const codigo = document.getElementById('prod-codigo').value.trim();
-    const nombre = document.getElementById('prod-nombre').value.trim();
-    const precio = parseFloat(document.getElementById('prod-precio').value);
-    const stock = parseInt(document.getElementById('prod-stock').value) || 0;
-    const tipo = document.getElementById('prod-tipo').value;
-    
-    if (!codigo || !nombre || isNaN(precio) || precio <= 0) { 
-        alert('Complete todos los campos correctamente.'); 
-        return; 
-    }
-    if (productos.some(p => p.codigo === codigo)) { 
-        alert('⚠️ Este código ya existe.'); 
-        return; 
-    }
-    
-    productos.push({ codigo, nombre, precio, stock, tipo });
-    guardarProductos();
-    renderizarProductos();
-    
-    document.getElementById('prod-codigo').value = '';
-    document.getElementById('prod-nombre').value = '';
-    document.getElementById('prod-precio').value = '';
-    document.getElementById('prod-stock').value = '';
-    
-    alert('✅ Producto agregado exitosamente');
-}
-
-function eliminarProductoSeleccionado() {
-    const codigo = document.getElementById('prod-eliminar-codigo').value.trim();
-    if (!codigo) { alert('Escriba el código del producto'); return; }
-    
-    const indice = productos.findIndex(p => p.codigo === codigo);
-    if (indice === -1) { alert('Producto no encontrado'); return; }
-    
-    if (!confirm(`¿Eliminar "${productos[indice].nombre}"?`)) return;
-    
-    productos.splice(indice, 1);
-    guardarProductos();
-    renderizarProductos();
-    
-    document.getElementById('prod-eliminar-codigo').value = '';
-    alert('✅ Producto eliminado');
-}
-
 function agregarProductoAVenta(indice) {
     const prod = productos[indice];
-    if (prod.stock <= 0 && prod.tipo === 'unidad') { 
-        alert('⚠️ Sin stock disponible'); 
-        return; 
-    }
-    
+    if (prod.stock <= 0 && prod.tipo === 'unidad') { alert('⚠️ Sin stock disponible'); return; }
     let cantidad = 1;
     if (prod.tipo === 'kilo') {
         const peso = prompt(`Peso en kilos para ${prod.nombre}:`, "1");
@@ -634,13 +587,8 @@ function agregarProductoAVenta(indice) {
         cantidad = parseFloat(peso);
         if (isNaN(cantidad) || cantidad <= 0) return;
     }
-    
     const subtotal = prod.precio * cantidad;
-    ventaActual.push({ 
-        indice, codigo: prod.codigo, nombre: prod.nombre, 
-        precio: prod.precio, cantidad, subtotal, tipo: prod.tipo 
-    });
-    
+    ventaActual.push({ indice, codigo: prod.codigo, nombre: prod.nombre, precio: prod.precio, cantidad, subtotal, tipo: prod.tipo });
     if (prod.tipo === 'unidad') productos[indice].stock -= cantidad;
     actualizarListaVenta();
     guardarProductos();
@@ -670,20 +618,14 @@ function actualizarListaVenta() {
 
 function eliminarItemVenta(index) {
     const item = ventaActual[index];
-    if (item.tipo === 'unidad') { 
-        productos[item.indice].stock += item.cantidad; 
-        guardarProductos(); 
-        renderizarProductos(); 
-    }
+    if (item.tipo === 'unidad') { productos[item.indice].stock += item.cantidad; guardarProductos(); renderizarProductos(); }
     ventaActual.splice(index, 1);
     actualizarListaVenta();
 }
 
 function limpiarVenta() {
-    if (ventaActual.length > 0 && !confirm('¿Limpiar la venta actual?')) return;
-    ventaActual.forEach(item => { 
-        if (item.tipo === 'unidad') productos[item.indice].stock += item.cantidad; 
-    });
+    if (ventaActual.length > 0 && !confirm('¿Limpiar venta?')) return;
+    ventaActual.forEach(item => { if (item.tipo === 'unidad') productos[item.indice].stock += item.cantidad; });
     ventaActual = [];
     guardarProductos();
     renderizarProductos();
@@ -694,7 +636,7 @@ function limpiarVenta() {
 }
 
 // ==================================================
-// PAGOS
+// SELECCIÓN DE PAGO Y FINALIZAR
 // ==================================================
 function seleccionarPago(elemento) {
     document.querySelectorAll('.medio-pago').forEach(el => el.classList.remove('seleccionado'));
@@ -709,12 +651,15 @@ function seleccionarPago(elemento) {
     if (metodoPagoSeleccionado === 'efectivo') {
         montoInput.disabled = false;
         montoInput.value = '';
+        montoInput.placeholder = '0';
         vueltoFila.classList.remove('vuelto-oculto');
+        vueltoFila.style.display = 'block';
         infoTexto.textContent = '— Escriba el monto recibido';
         calcularVuelto();
     } else {
         montoInput.disabled = true;
         montoInput.value = totalVenta;
+        montoInput.placeholder = 'Auto';
         vueltoFila.classList.add('vuelto-oculto');
         vueltoFila.innerHTML = 'Vuelto: — (Pago exacto)';
         infoTexto.textContent = '— Monto = Total automático';
@@ -728,26 +673,38 @@ function calcularVuelto() {
         return;
     }
     const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
-    document.getElementById('vuelto').textContent = Math.max(0, recibido - total).toLocaleString();
+    const vuelto = recibido - total;
+    document.getElementById('vuelto').textContent = (vuelto > 0 ? vuelto : 0).toLocaleString();
 }
 
 function finalizarVenta() {
     const total = ventaActual.reduce((sum, i) => sum + i.subtotal, 0);
-    if (total === 0) { alert('No hay productos en la venta'); return; }
+    if (total === 0) { alert('Sin productos'); return; }
 
     if (metodoPagoSeleccionado === 'efectivo') {
         const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
-        if (recibido < total) { alert('❌ El monto recibido es insuficiente'); return; }
+        if (recibido < total) {
+            alert('❌ Monto insuficiente');
+            return;
+        }
     }
 
     caja[metodoPagoSeleccionado] += total;
     localStorage.setItem('caja', JSON.stringify(caja));
     actualizarCaja();
 
+    // Registrar en el historial indicando el cajero actual
+    const horaActual = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+    const resumenItems = ventaActual.map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
+    historialVentas.unshift({ hora: horaActual, cajero: cajeroActual, detalle: resumenItems, metodo: metodoPagoSeleccionado.toUpperCase(), total });
+    localStorage.setItem('historialVentas', JSON.stringify(historialVentas));
+
     let mensaje = `✅ Venta finalizada!\nTotal: $${total.toLocaleString()}`;
     if (metodoPagoSeleccionado === 'efectivo') {
         const recibido = parseFloat(document.getElementById('monto-recibido').value) || 0;
         mensaje += `\nVuelto: $${(recibido - total).toLocaleString()}`;
+    } else {
+        mensaje += `\nPago: ${metodoPagoSeleccionado.toUpperCase()} — Monto exacto`;
     }
     alert(mensaje);
 
@@ -760,14 +717,15 @@ function finalizarVenta() {
 }
 
 // ==================================================
-// CAJA E IMPRESIÓN
+// IMPRESIÓN Y CAJA
 // ==================================================
 function previsualizarCaja() {
     const totalCaja = caja.efectivo + caja.debito + caja.transferencia;
     const fechaHora = new Date().toLocaleString('es-CL', { dateStyle: 'full', timeStyle: 'short' });
-    document.getElementById('contenido-ticket').innerHTML = `
+    const ticket = document.getElementById('contenido-ticket');
+    ticket.innerHTML = `
         <div class="titulo">🛒 MINIMARKET PRO</div>
-        <div style="text-align:center; font-size:12px; margin-bottom:10px;">Sistema de Ventas POS</div>
+        <div style="text-align:center; font-size:12px; margin-bottom:10px;">Sistema POS — Cajero: ${cajeroActual}</div>
         <div class="divisor"></div>
         <div style="text-align:center; font-size:13px; margin-bottom:10px;">FECHA: ${fechaHora}</div>
         <div class="divisor"></div>
@@ -777,7 +735,7 @@ function previsualizarCaja() {
         <div class="divisor"></div>
         <div class="fila total-final"><span>TOTAL CAJA:</span><span>$${totalCaja.toLocaleString()}</span></div>
         <div class="divisor"></div>
-        <div class="pie" style="text-align:center; font-size:12px; margin-top:20px; color:#555;">FIRMA RESPONSABLE: ___________________<br><br>¡Gracias por su trabajo!</div>
+        <div class="pie">FIRMA RESPONSABLE: ___________________<br><br>¡Gracias por su trabajo!</div>
     `;
     document.getElementById('ventana-impresion').style.display = 'flex';
 }
@@ -790,15 +748,232 @@ function actualizarCaja() {
     document.getElementById('caja-efectivo').textContent = '$' + caja.efectivo.toLocaleString();
     document.getElementById('caja-debito').textContent = '$' + caja.debito.toLocaleString();
     document.getElementById('caja-transferencia').textContent = '$' + caja.transferencia.toLocaleString();
-    document.getElementById('caja-total').textContent = '$' + (caja.efectivo + caja.debito + caja.transferencia).toLocaleString();
+    const total = caja.efectivo + caja.debito + caja.transferencia;
+    document.getElementById('caja-total').textContent = '$' + total.toLocaleString();
 }
 
 function cerrarCaja() {
-    if (!confirm('¿Seguro de cerrar la caja? Se reiniciarán los montos del día.')) return;
-    caja = { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
-    localStorage.setItem('caja', JSON.stringify(caja));
-    actualizarCaja();
-    alert('✅ Caja cerrada y reiniciada');
+    const total = caja.efectivo + caja.debito + caja.transferencia;
+    if (!confirm(`📊 CIERRE DE CAJA — ${new Date().toLocaleDateString()}\n\n💵 Efectivo: $${caja.efectivo.toLocaleString()}\n💳 Débito: $${caja.debito.toLocaleString()}\n🔄 Transferencia: $${caja.transferencia.toLocaleString()}\n\n💰 TOTAL: $${total.toLocaleString()}\n\n¿Ver reporte e imprimir?`)) return;
+    previsualizarCaja();
+    setTimeout(() => {
+        if (confirm('¿Reiniciar caja ahora?')) {
+            caja = { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
+            localStorage.setItem('caja', JSON.stringify(caja));
+            actualizarCaja();
+            cerrarVentanaImpresion();
+            alert('✅ Caja cerrada y reiniciada.');
+        }
+    }, 500);
+}
+
+// ==================================================
+// GESTIÓN
+// ==================================================
+function abrirGestion() {
+    document.getElementById('seccion-admin').style.display = 'none';
+    const gestionDiv = document.getElementById('seccion-gestion');
+    gestionDiv.style.display = gestionDiv.style.display === 'none' ? 'block' : 'none';
+    renderizarHistorialGestion();
+}
+
+function cerrarGestion() {
+    document.getElementById('seccion-gestion').style.display = 'none';
+}
+
+function renderizarHistorialGestion() {
+    const tbody = document.getElementById('lista-historial-gestion');
+    tbody.innerHTML = '';
+    if (historialVentas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">No hay ventas registradas hoy.</td></tr>`;
+        return;
+    }
+    historialVentas.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${v.hora}</td>
+            <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:bold;">${v.cajero || 'N/A'}</span></td>
+            <td>${v.detalle}</td>
+            <td><strong>${v.metodo}</strong></td>
+            <td>$${v.total.toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function pedirClaveBorrarHistorial() {
+    const clave = prompt('🔐 Ingrese clave (Gestión o Admin) para borrar el historial:');
+    if (clave === claveAcceso || clave === claveAdmin) {
+        if (confirm('🗑️ ¿Estás seguro de borrar el historial de ventas?')) {
+            historialVentas = [];
+            localStorage.removeItem('historialVentas');
+            renderizarHistorialGestion();
+            alert('✅ Historial borrado con éxito.');
+        }
+    } else {
+        alert('❌ Clave incorrecta. No se pudo borrar el historial.');
+    }
+}
+
+// ==================================================
+// ADMIN & GESTIÓN DE CAJEROS
+// ==================================================
+function mostrarAdmin() {
+    const claveIngresada = prompt('🔐 Clave de Administrador (Propietario):');
+    if (claveIngresada === claveAdmin) {
+        document.getElementById('seccion-gestion').style.display = 'none';
+        document.getElementById('seccion-admin').style.display = 'block';
+        renderizarHistorialAdmin();
+        renderizarCajerosAdmin();
+        alert('✅ Acceso concedido — Panel Avanzado y Cajeros');
+    } else {
+        alert('❌ Acceso denegado — Clave incorrecta');
+        document.getElementById('seccion-admin').style.display = 'none';
+    }
+}
+
+function cerrarAdmin() {
+    document.getElementById('seccion-admin').style.display = 'none';
+}
+
+function renderizarCajerosAdmin() {
+    const tbody = document.getElementById('lista-cajeros-admin');
+    tbody.innerHTML = '';
+    cajeros.forEach((c, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${c}</strong></td>
+            <td><button class="btn btn-rojo" style="padding:4px 8px; font-size:12px;" onclick="eliminarCajero(${index})">🗑️ Eliminar</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function agregarCajero() {
+    const nombre = document.getElementById('nuevo-cajero-nombre').value.trim();
+    if (!nombre) { alert('Escriba el nombre del cajero.'); return; }
+    cajeros.push(nombre);
+    localStorage.setItem('cajeros', JSON.stringify(cajeros));
+    document.getElementById('nuevo-cajero-nombre').value = '';
+    renderizarCajerosAdmin();
+    // Actualizar select de login también
+    window.onload();
+    alert(`✅ Cajero "${nombre}" agregado con éxito.`);
+}
+
+function eliminarCajero(index) {
+    if (cajeros.length <= 1) { alert('Debe haber al menos un cajero en el sistema.'); return; }
+    if (!confirm(`¿Eliminar al cajero "${cajeros[index]}"?`)) return;
+    cajeros.splice(index, 1);
+    localStorage.setItem('cajeros', JSON.stringify(cajeros));
+    renderizarCajerosAdmin();
+    window.onload();
+    alert('✅ Cajero eliminado.');
+}
+
+function renderizarHistorialAdmin() {
+    const tbody = document.getElementById('lista-historial-admin');
+    tbody.innerHTML = '';
+    if (historialVentas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#777;">No hay ventas registradas hoy.</td></tr>`;
+        return;
+    }
+    historialVentas.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${v.hora}</td>
+            <td><span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; font-weight:bold;">${v.cajero || 'N/A'}</span></td>
+            <td>${v.detalle}</td>
+            <td><strong>${v.metodo}</strong></td>
+            <td>$${v.total.toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function limpiarHistorialVentas() {
+    if (confirm('🗑️ ¿Estás seguro de borrar todo el historial de ventas del día?')) {
+        historialVentas = [];
+        localStorage.removeItem('historialVentas');
+        renderizarHistorialAdmin();
+        alert('✅ Historial limpiado por el administrador.');
+    }
+}
+
+function reiniciarCajaAdmin() {
+    if (confirm('⚠️ ¿Estás seguro de forzar el reinicio de la caja a $0?')) {
+        caja = { efectivo: 0, debito: 0, transferencia: 0, fecha: new Date().toLocaleDateString() };
+        localStorage.setItem('caja', JSON.stringify(caja));
+        actualizarCaja();
+        alert('✅ Caja reiniciada a cero por el administrador.');
+    }
+}
+
+function activarSistemaPermanente() {
+    if (confirm('⭐ ¿Deseas activar el sistema permanentemente para quitar el bloqueo de los 30 días?')) {
+        sistemaActivado = true;
+        localStorage.setItem('sistemaActivado', 'true');
+        alert('✅ ¡Sistema activado para siempre con éxito!');
+    }
+}
+
+// ==================================================
+// ACCIONES DE PRODUCTOS Y CLAVES
+// ==================================================
+function agregarProducto() {
+    const codigo = document.getElementById('prod-codigo').value.trim();
+    const nombre = document.getElementById('prod-nombre').value.trim();
+    const precio = parseFloat(document.getElementById('prod-precio').value);
+    const stock = parseInt(document.getElementById('prod-stock').value) || 0;
+    const tipo = document.getElementById('prod-tipo').value;
+    if (!codigo || !nombre || isNaN(precio) || precio <= 0) { alert('Complete todos los campos.'); return; }
+    
+    const index = productos.findIndex(p => p.codigo === codigo);
+    if (index !== -1) {
+        productos[index] = { codigo, nombre, precio, stock, tipo };
+        alert('✅ Producto actualizado correctamente.');
+    } else {
+        productos.push({ codigo, nombre, precio, stock, tipo });
+        alert('✅ Producto agregado.');
+    }
+    
+    guardarProductos();
+    renderizarProductos();
+    document.getElementById('prod-codigo').value = '';
+    document.getElementById('prod-nombre').value = '';
+    document.getElementById('prod-precio').value = '';
+    document.getElementById('prod-stock').value = '';
+}
+
+function eliminarProductoSeleccionado() {
+    const codigo = prompt('Código del producto a eliminar:');
+    if (!codigo) return;
+    const indice = productos.findIndex(p => p.codigo === codigo);
+    if (indice === -1) { alert('No encontrado'); return; }
+    if (!confirm(`¿Eliminar "${productos[indice].nombre}"?`)) return;
+    productos.splice(indice, 1);
+    guardarProductos();
+    renderizarProductos();
+    alert('✅ Eliminado.');
+}
+
+function guardarClaves() {
+    const nuevaAcceso = document.getElementById('nueva-clave-acceso').value.trim();
+    const nuevaAdmin = document.getElementById('nueva-clave-admin').value.trim();
+
+    if (nuevaAcceso) {
+        claveAcceso = nuevaAcceso;
+        localStorage.setItem('claveAcceso', claveAcceso);
+    }
+    if (nuevaAdmin) {
+        claveAdmin = nuevaAdmin;
+        localStorage.setItem('claveAdmin', claveAdmin);
+    }
+
+    alert('✅ Claves actualizadas con éxito.');
+    document.getElementById('nueva-clave-acceso').value = '';
+    document.getElementById('nueva-clave-admin').value = '';
+    cerrarAdmin();
 }
 </script>
 </body>
