@@ -975,7 +975,256 @@ function guardarClaves() {
     document.getElementById('nueva-clave-admin').value = '';
     cerrarAdmin();
 }
+</script><!-- BOTÓN FLOTANTE MOVIBLE L&R CREACIONES - MOSTRAR / OCULTAR WHATSAPP -->
+<div id="lr-sello-flotante" role="region" aria-label="Sello L&R Creaciones">
+  <div id="lr-sello-menu" class="lr-menu-oculto">
+    <div class="lr-menu-cab">
+      <span>L&amp;R CREACIONES</span>
+      <button type="button" id="lr-menu-cerrar" class="lr-menu-cerrar" aria-label="Ocultar números" title="Ocultar números">&times;</button>
+    </div>
+    <div class="lr-menu-sub">Impresión y Computación</div>
+    <a class="lr-menu-wa" href="https://wa.me/56948685224?text=Hola%2C%20vi%20el%20bot%C3%B3n%20de%20L%26R%20Creaciones%20y%20quiero%20consultar." target="_blank" rel="noopener noreferrer">WA +56948685224</a>
+    <a class="lr-menu-wa" href="https://wa.me/56959732269?text=Hola%2C%20vi%20el%20bot%C3%B3n%20de%20L%26R%20Creaciones%20y%20quiero%20consultar." target="_blank" rel="noopener noreferrer">WA +56959732269</a>
+    <div class="lr-menu-pie">¡Calidad y confianza!</div>
+  </div>
+
+  <button type="button" id="lr-sello-boton" class="lr-sello-pildora" aria-expanded="false" aria-controls="lr-sello-menu" title="Toca para mostrar u ocultar números, o arrastra para mover">
+    <span class="lr-sello-punto" aria-hidden="true"></span>
+    <span class="lr-sello-texto">L&amp;R Creaciones</span>
+  </button>
+</div>
+
+<style>
+  #lr-sello-flotante,
+  #lr-sello-flotante * {
+    box-sizing: border-box;
+  }
+
+  #lr-sello-flotante {
+    position: fixed !important;
+    left: 10px !important;
+    bottom: 10px !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: 2147483647 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    touch-action: none;
+  }
+
+  #lr-sello-flotante .lr-sello-pildora {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    border: 2px solid #163a5f !important;
+    background: #163a5f !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(22, 58, 95, 0.28) !important;
+    cursor: grab !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.2px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    animation: lrFlotarSuave 3s ease-in-out infinite;
+  }
+
+  #lr-sello-flotante .lr-sello-pildora:active {
+    cursor: grabbing !important;
+  }
+
+  #lr-sello-flotante .lr-sello-punto {
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    background: #25d366 !important;
+    flex-shrink: 0 !important;
+  }
+
+  #lr-sello-flotante .lr-sello-texto {
+    color: #ffffff !important;
+    line-height: 1 !important;
+  }
+
+  #lr-sello-flotante #lr-sello-menu {
+    position: absolute !important;
+    left: 0 !important;
+    bottom: 46px !important;
+    width: 176px !important;
+    background: #ffffff !important;
+    border: 2px solid #163a5f !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: 0 6px 18px rgba(22, 58, 95, 0.25) !important;
+    color: #163a5f !important;
+    text-align: center !important;
+  }
+
+  #lr-sello-flotante #lr-sello-menu.lr-menu-oculto {
+    display: none !important;
+  }
+
+  #lr-sello-flotante .lr-menu-cab {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 5px 7px 2px 9px !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    line-height: 1.15 !important;
+  }
+
+  #lr-sello-flotante .lr-menu-cerrar {
+    border: none !important;
+    background: transparent !important;
+    color: #163a5f !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    padding: 0 2px !important;
+    cursor: pointer !important;
+  }
+
+  #lr-sello-flotante .lr-menu-sub {
+    padding: 0 6px 4px !important;
+    font-size: 7.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+  }
+
+  #lr-sello-flotante .lr-menu-wa {
+    display: block !important;
+    margin: 4px 6px 0 !important;
+    padding: 4px 5px !important;
+    background: #eef4fa !important;
+    color: #163a5f !important;
+    border: 1px solid #163a5f !important;
+    border-radius: 999px !important;
+    text-decoration: none !important;
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+  }
+
+  #lr-sello-flotante .lr-menu-wa:last-of-type {
+    margin-bottom: 5px !important;
+  }
+
+  #lr-sello-flotante .lr-menu-wa:hover {
+    background: #163a5f !important;
+    color: #ffffff !important;
+  }
+
+  #lr-sello-flotante .lr-menu-pie {
+    background: #163a5f !important;
+    color: #ffffff !important;
+    padding: 3px 5px !important;
+    font-size: 7px !important;
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+  }
+
+  @keyframes lrFlotarSuave {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-3px); }
+  }
+</style>
+
+<script>
+  (function () {
+    const wrap = document.getElementById("lr-sello-flotante");
+    const btn = document.getElementById("lr-sello-boton");
+    const menu = document.getElementById("lr-sello-menu");
+    const btnCerrar = document.getElementById("lr-menu-cerrar");
+    if (!wrap || !btn || !menu) return;
+
+    let arrastrando = false;
+    let seMovio = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    function alternarMenu(forzarOcultar) {
+      const oculto = typeof forzarOcultar === "boolean"
+        ? menu.classList.toggle("lr-menu-oculto", forzarOcultar)
+        : menu.classList.toggle("lr-menu-oculto");
+      btn.setAttribute("aria-expanded", String(!oculto));
+    }
+
+    function iniciarArrastre(clientX, clientY) {
+      const rect = wrap.getBoundingClientRect();
+      arrastrando = true;
+      seMovio = false;
+      offsetX = clientX - rect.left;
+      offsetY = clientY - rect.top;
+      wrap.style.setProperty("left", rect.left + "px", "important");
+      wrap.style.setProperty("top", rect.top + "px", "important");
+      wrap.style.setProperty("right", "auto", "important");
+      wrap.style.setProperty("bottom", "auto", "important");
+    }
+
+    function moverArrastre(clientX, clientY) {
+      if (!arrastrando) return;
+      seMovio = true;
+      const maxX = Math.max(6, window.innerWidth - wrap.offsetWidth - 6);
+      const maxY = Math.max(6, window.innerHeight - wrap.offsetHeight - 6);
+      const x = Math.min(Math.max(6, clientX - offsetX), maxX);
+      const y = Math.min(Math.max(6, clientY - offsetY), maxY);
+      wrap.style.setProperty("left", x + "px", "important");
+      wrap.style.setProperty("top", y + "px", "important");
+    }
+
+    function terminarArrastre() {
+      arrastrando = false;
+    }
+
+    btn.addEventListener("mousedown", (e) => iniciarArrastre(e.clientX, e.clientY));
+    window.addEventListener("mousemove", (e) => moverArrastre(e.clientX, e.clientY));
+    window.addEventListener("mouseup", terminarArrastre);
+
+    btn.addEventListener("touchstart", (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      iniciarArrastre(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      if (!arrastrando || !e.touches || !e.touches[0]) return;
+      moverArrastre(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    window.addEventListener("touchend", terminarArrastre);
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (seMovio) {
+        seMovio = false;
+        return;
+      }
+      alternarMenu();
+    });
+
+    if (btnCerrar) {
+      btnCerrar.addEventListener("click", (e) => {
+        e.stopPropagation();
+        alternarMenu(true);
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!wrap.contains(e.target)) {
+        alternarMenu(true);
+      }
+    });
+  })();
 </script>
+
+
+
 </body>
 </html>
 
